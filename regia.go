@@ -44,7 +44,7 @@ type Engine struct {
 }
 
 func (e *Engine) dispatchContext() *Context {
-	return &Context{MultipartMemory: e.MultipartMemory, Engine: e}
+	return &Context{Engine: e}
 }
 
 // register all handles to router

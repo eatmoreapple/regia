@@ -31,24 +31,24 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.ResponseWriter = writer
 	c.Params = params
 	c.group = group
-	c.MultipartMemory = c.Engine.MultipartMemory
-	c.abort = c.Engine.Abort
 	c.FileStorage = LocalFileStorage{}
+	c.abort = c.Engine.Abort
+	c.MultipartMemory = c.Engine.MultipartMemory
+	c.index = 0
 }
 
 func (c *Context) reset() {
 	c.index = 0
-	c.contextValue = nil
-	c.FileStorage = nil
-	c.Parsers = nil
-	c.Authenticators = nil
-	c.abort = nil
-	c.group = nil
 	c.Request = nil
 	c.ResponseWriter = nil
-	c.Engine = nil
-	c.MultipartMemory = 0
 	c.Params = nil
+	c.group = nil
+	c.FileStorage = nil
+	c.abort = nil
+	c.MultipartMemory = defaultMultipartMemory
+	c.contextValue = nil
+	c.Parsers = nil
+	c.Authenticators = nil
 }
 
 func (c *Context) start() {
