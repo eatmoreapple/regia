@@ -141,6 +141,7 @@ func New() *Engine {
 		Abort:           exit{},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
+	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))
 	return engine
 }
 
@@ -149,7 +150,6 @@ func Default() *Engine {
 	engine := New()
 	engine.AddInterceptors(LogInterceptor)
 	engine.AddStarter(&BannerStarter{Banner: Banner}, &UrlInfoStarter{})
-	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))
 	return engine
 }
 
