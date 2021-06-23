@@ -1,8 +1,8 @@
 package regia
 
 import (
+	"encoding/json"
 	"encoding/xml"
-	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ type JsonRender struct{}
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	data, err := jsoniter.Marshal(v)
+	data, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
