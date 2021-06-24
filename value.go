@@ -172,6 +172,8 @@ type Warehouse interface {
 	Get(key string) (value interface{}, exist bool)
 }
 
+var _ Warehouse = new(SyncMap)
+
 type SyncMap struct {
 	item map[string]interface{}
 	mu   sync.RWMutex

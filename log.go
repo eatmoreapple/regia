@@ -35,6 +35,7 @@ type Log interface {
 	Error(text string)
 }
 
+// ConsoleLog implement Log
 type ConsoleLog struct{}
 
 func (c ConsoleLog) Info(text string) {

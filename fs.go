@@ -26,13 +26,16 @@ type FileStorage interface {
 }
 
 type LocalFileStorage struct {
-	mediaRouter string
+	mediaRoot string
 }
 
-func (l *LocalFileStorage) SetMediaRouter(mediaRouter string) {
-	l.mediaRouter = mediaRouter
+// SetMediaRouter Set file base save path for LocalFileStorage
+func (l *LocalFileStorage) SetMediaRouter(mediaRoot string) {
+	l.mediaRoot = mediaRoot
 }
 
+// Save implement FileStorage
+// Uploads the form file to local
 func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) error {
 	src, err := fileHeader.Open()
 	if err != nil {
@@ -40,7 +43,7 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) error {
 	}
 	defer src.Close()
 
-	dst := path.Join(l.mediaRouter, fileHeader.Filename)
+	dst := path.Join(l.mediaRoot, fileHeader.Filename)
 	out, err := os.Create(dst)
 	if err != nil {
 		return err

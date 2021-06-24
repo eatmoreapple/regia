@@ -26,6 +26,7 @@ type Context struct {
 	abort           Exit
 }
 
+// init prepare for this request
 func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Params, group HandleFuncGroup) {
 	c.Request = req
 	c.ResponseWriter = writer
@@ -37,6 +38,7 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.index = 0
 }
 
+// reset reset current Context
 func (c *Context) reset() {
 	c.index = 0
 	c.Request = nil
@@ -51,11 +53,13 @@ func (c *Context) reset() {
 	c.Authenticators = nil
 }
 
+// start start to handle current request
 func (c *Context) start() {
 	defer c.recover()
 	c.Next()
 }
 
+// i do not think it is a good design
 func (c *Context) recover() {
 	if rec := recover(); rec != nil {
 		if e, ok := rec.(Exit); ok {
@@ -66,6 +70,7 @@ func (c *Context) recover() {
 	}
 }
 
+// Next call next handle
 func (c *Context) Next() {
 	c.index++
 	for c.index <= len(c.group) {
@@ -75,23 +80,28 @@ func (c *Context) Next() {
 	}
 }
 
+// SetAbort Set Exit for this request
 func (c *Context) SetAbort(abort Exit) {
 	c.abort = abort
 }
 
-// Abort Just exit and do nothing
+// Abort skip current handle and will call Context.abort
+// exit and do nothing by default
 func (c *Context) Abort() { c.AbortWith(c.abort) }
 
+// AbortWith skip current handle and call given exit
 func (c *Context) AbortWith(exit Exit) { panic(exit) }
 
 // Flusher Make http.ResponseWriter as http.Flusher
 func (c *Context) Flusher() http.Flusher { return c.ResponseWriter.(http.Flusher) }
 
-// SaveUploadFile implement your own idea with it
+// SaveUploadFile will call Context.FileStorage
+// default save file to local path
 func (c *Context) SaveUploadFile(name string) error {
 	return c.SaveUploadFileWith(c.FileStorage, name)
 }
 
+// SaveUploadFileWith call given FileStorage with upload file
 func (c *Context) SaveUploadFileWith(fs FileStorage, name string) error {
 	if fs == nil {
 		return errors.New("`FileStorage` can be nil type")
@@ -100,28 +110,36 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) error {
 	if err != nil {
 		return err
 	}
+	// try to close return file
 	if err = file.Close(); err != nil {
 		return err
 	}
 	return c.FileStorage.Save(fileHeader)
 }
 
+// Data analysis request body to destination
+// Call Context.AddParser to add more support
 func (c *Context) Data(v interface{}) error {
 	return c.Parsers.Parse(c, v)
 }
 
+// AddParser add more Parser for Context.Data
 func (c *Context) AddParser(p ...Parser) {
 	c.Parsers = append(c.Parsers, p...)
 }
 
+// User sets the user on the current request
+// Call Context.AddAuthenticator to add more support
 func (c *Context) User(v interface{}) error {
 	return c.Authenticators.RunAuthenticate(c, v)
 }
 
+// AddAuthenticator add more Authenticator for Context.User
 func (c *Context) AddAuthenticator(a ...Authenticator) {
 	c.Authenticators = append(c.Authenticators, a...)
 }
 
+// ContextValue is a goroutine safe context data storage
 func (c *Context) ContextValue() *SyncMap {
 	if c.contextValue == nil {
 		c.contextValue = new(SyncMap)
@@ -129,14 +147,17 @@ func (c *Context) ContextValue() *SyncMap {
 	return c.contextValue
 }
 
+// Bind bind request to destination
 func (c *Context) Bind(binder Binder, v interface{}) error {
 	return binder.Bind(c, v)
 }
 
+// BindQuery bind Query to destination
 func (c *Context) BindQuery(v interface{}) error {
 	return c.Bind(queryBinder, v)
 }
 
+// BindForm bind PostForm to destination
 func (c *Context) BindForm(v interface{}) error {
 	if err := c.ParseForm(); err != nil {
 		return err
@@ -144,6 +165,7 @@ func (c *Context) BindForm(v interface{}) error {
 	return c.Bind(formBinder, v)
 }
 
+// BindMultipartForm bind MultipartForm to destination
 func (c *Context) BindMultipartForm(v interface{}) error {
 	if err := c.Request.ParseMultipartForm(c.MultipartMemory); err != nil {
 		return err
@@ -151,38 +173,48 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 	return c.Bind(multipartFormBinder, v)
 }
 
+// BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
 	return c.Bind(jsonBinder, v)
 }
 
+// BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
 	return c.Bind(xmlBinder, v)
 }
 
+// SetStatus set response status code
+// call this method at last
 func (c *Context) SetStatus(code int) {
 	c.WriteHeader(code)
 }
 
+// SetHeader set response header
 func (c *Context) SetHeader(key, value string) {
 	c.ResponseWriter.Header().Set(key, value)
 }
 
+// SetCookie is a shortcut for http.SetCookie
 func (c *Context) SetCookie(cookie *http.Cookie) {
 	http.SetCookie(c.ResponseWriter, cookie)
 }
 
+// Render write response data with given Render
 func (c *Context) Render(render Render, data interface{}) error {
 	return render.Render(c.ResponseWriter, data)
 }
 
+// JSON write json response
 func (c *Context) JSON(data interface{}) error {
 	return c.Render(jsonRender, data)
 }
 
+// XML write xml response
 func (c *Context) XML(data interface{}) error {
 	return c.Render(xmlRender, data)
 }
 
+// Text write string response
 func (c *Context) Text(text string) (int, error) {
 	writeContentType(c.ResponseWriter, textHtmlContentType)
 	return c.ResponseWriter.Write(stringToByte(text))
