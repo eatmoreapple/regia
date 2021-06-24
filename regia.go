@@ -1,7 +1,5 @@
 package regia
 
-// To Regia
-
 import (
 	"net/http"
 	"reflect"

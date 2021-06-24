@@ -414,3 +414,8 @@ func (d *SyncMap) GetBool(key string, def ...bool) bool {
 	}
 	return false
 }
+
+const (
+	author = "多吃点苹果"
+	wechat = "EatMoreApple"
+)
