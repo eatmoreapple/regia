@@ -33,3 +33,8 @@ func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	_, err = writer.Write(data)
 	return err
 }
+
+var (
+	jsonRender = JsonRender{}
+	xmlRender  = XmlRender{}
+)

@@ -134,34 +134,29 @@ func (c *Context) Bind(binder Binder, v interface{}) error {
 }
 
 func (c *Context) BindQuery(v interface{}) error {
-	binder := QueryBinder{}
-	return c.Bind(binder, v)
+	return c.Bind(queryBinder, v)
 }
 
 func (c *Context) BindForm(v interface{}) error {
 	if err := c.ParseForm(); err != nil {
 		return err
 	}
-	binder := FormBinder{}
-	return c.Bind(binder, v)
+	return c.Bind(formBinder, v)
 }
 
 func (c *Context) BindMultipartForm(v interface{}) error {
 	if err := c.Request.ParseMultipartForm(c.MultipartMemory); err != nil {
 		return err
 	}
-	binder := MultipartFormBinder{}
-	return c.Bind(binder, v)
+	return c.Bind(multipartFormBinder, v)
 }
 
 func (c *Context) BindJSON(v interface{}) error {
-	binder := JsonBodyBinder{}
-	return c.Bind(binder, v)
+	return c.Bind(jsonBinder, v)
 }
 
 func (c *Context) BindXML(v interface{}) error {
-	binder := XmlBodyBinder{}
-	return c.Bind(binder, v)
+	return c.Bind(xmlBinder, v)
 }
 
 func (c *Context) SetStatus(code int) {
@@ -181,13 +176,11 @@ func (c *Context) Render(render Render, data interface{}) error {
 }
 
 func (c *Context) JSON(data interface{}) error {
-	render := JsonRender{}
-	return c.Render(render, data)
+	return c.Render(jsonRender, data)
 }
 
 func (c *Context) XML(data interface{}) error {
-	render := XmlRender{}
-	return c.Render(render, data)
+	return c.Render(xmlRender, data)
 }
 
 func (c *Context) Text(text string) (int, error) {

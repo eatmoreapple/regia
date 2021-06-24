@@ -39,3 +39,11 @@ type MultipartFormBinder struct{}
 func (m MultipartFormBinder) Bind(context *Context, v interface{}) error {
 	return binder.BindMultipartForm(context.Request.MultipartForm, v)
 }
+
+var (
+	queryBinder         = QueryBinder{}
+	formBinder          = FormBinder{}
+	jsonBinder          = JsonBodyBinder{}
+	xmlBinder           = XmlBodyBinder{}
+	multipartFormBinder = MultipartFormBinder{}
+)
