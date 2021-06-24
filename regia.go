@@ -122,6 +122,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
 	group, params := e.Router.Match(request)
 	if group != nil {
+		context.matched = true
 		group = append(e.Interceptors, group...)
 	} else {
 		group = append(e.Interceptors, e.NotFoundHandle)

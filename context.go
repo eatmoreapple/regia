@@ -24,6 +24,7 @@ type Context struct {
 	Authenticators  Authenticators
 	Params          Params
 	abort           Exit
+	matched         bool
 }
 
 // init prepare for this request
@@ -51,6 +52,7 @@ func (c *Context) reset() {
 	c.contextValue = nil
 	c.Parsers = nil
 	c.Authenticators = nil
+	c.matched = false
 }
 
 // start start to handle current request
