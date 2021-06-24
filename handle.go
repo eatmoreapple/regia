@@ -36,7 +36,7 @@ func LogInterceptor(context *Context) {
 func regiaLog(start time.Time, context *Context) {
 	endTime := time.Since(start)
 	startTimeStr := formatColor(colorYellow, start.Format(defaultTimeFormat))
-	matched := formatColor(100, fmt.Sprintf("[MATCHED:%s]", strconv.FormatBool(context.matched)))
+	matched := formatColor(100, fmt.Sprintf("[MATCHED:%s]", strconv.FormatBool(context.IsMatched())))
 	method := formatColor(102, fmt.Sprintf("[METHOD:%s]", context.Request.Method))
 	path := formatColor(101, fmt.Sprintf("[PATH:%s]", context.Request.URL.Path)) // #02F3F3
 	addr := formatColor(104, fmt.Sprintf("[Addr:%s]", context.Request.RemoteAddr))

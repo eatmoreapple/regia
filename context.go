@@ -72,6 +72,11 @@ func (c *Context) recover() {
 	}
 }
 
+// IsMatched return that route matched
+func (c *Context) IsMatched() bool {
+	return c.matched
+}
+
 // Next call next handle
 func (c *Context) Next() {
 	c.index++
