@@ -8,7 +8,7 @@ import (
 
 const defaultTimeFormat = "2006-01-02 15:04:05"
 
-var logTitle = formatColor("[REGIA LOG]", colorGreen)
+var logTitle = formatColor(colorGreen, "[REGIA LOG]")
 
 type HandleFunc func(context *Context)
 
@@ -29,11 +29,11 @@ func LogInterceptor(context *Context) {
 
 	defer func() {
 		endTime := time.Since(start)
-		startTimeStr := formatColor(start.Format(defaultTimeFormat), colorYellow)
-		method := formatColor(fmt.Sprintf("[METHOD:%s]", context.Request.Method), colorBlue)
-		path := formatColor(fmt.Sprintf("[PATH:%s]", context.Request.URL.Path), 96) // #02F3F3
-		addr := formatColor(fmt.Sprintf("[Addr:%s]", context.Request.RemoteAddr), 97)
-		end := formatColor(endTime.String(), colorMagenta)
+		startTimeStr := formatColor(colorYellow, start.Format(defaultTimeFormat))
+		method := formatColor(colorBlue, fmt.Sprintf("[METHOD:%s]", context.Request.Method))
+		path := formatColor(96, fmt.Sprintf("[PATH:%s]", context.Request.URL.Path)) // #02F3F3
+		addr := formatColor(97, fmt.Sprintf("[Addr:%s]", context.Request.RemoteAddr))
+		end := formatColor(colorMagenta, endTime.String())
 		// 2006-01-02 15:04:05     [METHOD:GET]     [Addr:127.0.0.1:49453]      [PATH:/name]
 		fmt.Printf("%-20s %-32s %-20s %-28s %-35s  %-20s\n", logTitle, startTimeStr, end, method, addr, path)
 	}()

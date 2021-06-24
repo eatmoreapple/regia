@@ -15,7 +15,9 @@ func GetFileContentType(file multipart.File) (string, error) {
 	if _, err := file.Read(buffer); err != nil {
 		return "", err
 	}
-	file.Seek(0, 0)
+	if _, err := file.Seek(0, 0); err != nil {
+		return "", err
+	}
 	return http.DetectContentType(buffer), nil
 }
 

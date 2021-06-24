@@ -3,6 +3,7 @@ package regia
 import (
 	"net/http"
 	"reflect"
+	"strings"
 )
 
 type handleNode struct {
@@ -74,7 +75,7 @@ func (b *BluePrint) Include(prefix string, branch *BluePrint) {
 
 func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]string) {
 	for _, mapping := range mappings {
-		cleanedMapping := getCleanedRequestMapping(mapping)
+		cleanedMapping := b.getCleanedRequestMapping(mapping)
 		value := reflect.ValueOf(v)
 		for handleName, methodName := range cleanedMapping {
 			if method := value.MethodByName(handleName); method.IsValid() {
@@ -89,6 +90,22 @@ func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]stri
 func (b *BluePrint) BindMethod(path string, v interface{}, mappings ...map[string]string) {
 	mappings = append(mappings, HttpRequestMethodMapping)
 	b.Bind(path, v, mappings...)
+}
+
+func (b *BluePrint) getCleanedRequestMapping(mapping map[string]string) map[string]string {
+	cleanedMapping := make(map[string]string)
+	for handleName, requestMethod := range mapping {
+		requestMethodUpper := strings.ToUpper(requestMethod)
+		for index, method := range httpMethods {
+			if requestMethodUpper == method {
+				break
+			} else if index == (len(httpMethods)-1) && requestMethodUpper != method {
+				panic("invalid method" + requestMethod)
+			}
+		}
+		cleanedMapping[handleName] = requestMethodUpper
+	}
+	return cleanedMapping
 }
 
 func NewBranch() *BluePrint {

@@ -4,8 +4,10 @@ package regia
 
 import (
 	"net/http"
+	"reflect"
 	"strings"
 	"sync"
+	"unsafe"
 )
 
 const (
@@ -155,3 +157,7 @@ func Default() *Engine {
 
 // Map is a shortcut fot map[string]interface{}
 type Map map[string]interface{}
+
+func stringToByte(s string) []byte {
+	return *(*[]byte)(unsafe.Pointer(&*(*reflect.StringHeader)(unsafe.Pointer(&s))))
+}
