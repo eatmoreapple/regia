@@ -42,5 +42,5 @@ func regiaLog(start time.Time, context *Context) {
 	addr := formatColor(104, fmt.Sprintf("[Addr:%s]", context.Request.RemoteAddr))
 	end := formatColor(colorMagenta, endTime.String())
 	// 2006-01-02 15:04:05     [METHOD:GET]     [Addr:127.0.0.1:49453]      [PATH:/name]
-	fmt.Printf("%-23s %-32s %-20s %-28s %-28s %-35s %-20s\n", logTitle, startTimeStr, end, matched, method, addr, path)
+	fmt.Printf("%-23s %-32s %-20s %-28s %-28s %-40s %s\n", logTitle, startTimeStr, end, matched, method, path, addr)
 }
