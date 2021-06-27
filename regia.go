@@ -47,8 +47,8 @@ func (e *Engine) dispatchContext() *Context {
 	return &Context{Engine: e}
 }
 
-// register all handles to router
-func (e *Engine) registerHandle() {
+// Start implement Starter and register all handles to router
+func (e *Engine) Start(*Engine) {
 	for method, nodes := range e.methodsTree {
 		for _, node := range nodes {
 			e.Router.Insert(method, node.path, node.group)
@@ -100,7 +100,7 @@ func (e *Engine) runStarter() {
 
 // Init engine
 func (e *Engine) init() {
-	e.registerHandle()
+	e.AddStarter(e)
 	e.runStarter()
 }
 
