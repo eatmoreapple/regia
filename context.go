@@ -146,6 +146,19 @@ func (c *Context) AddAuthenticator(a ...Authenticator) {
 	c.Authenticators = append(c.Authenticators, a...)
 }
 
+// ValidateData validate request data is valid
+func (c *Context) ValidateData(validator Validator, v interface{}) error {
+	if err := c.Data(v); err != nil {
+		return err
+	}
+	return validator.Validate(v)
+}
+
+// Validate call ValidateData with defaultValidator
+func (c *Context) Validate(v interface{}) error {
+	return c.ValidateData(defaultValidator, v)
+}
+
 // ContextValue is a goroutine safe context data storage
 func (c *Context) ContextValue() *SyncMap {
 	if c.contextValue == nil {

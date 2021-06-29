@@ -1,2 +1,4 @@
 github.com/eatMoreApple/binder v0.0.0-20210623114348-7121f00b2f22 h1:ZTwWcyItUTyWFLxQOEWsY2MiPSxhFYa13N2VaG1Ifdc=
 github.com/eatMoreApple/binder v0.0.0-20210623114348-7121f00b2f22/go.mod h1:ovb52iORoBuens/j5lLlkyA3TePTD/pb6/w+BzgGTNI=
+github.com/eatMoreApple/validate v0.0.0-20210629085334-182b14f69bed h1:tkzAIKl7oYtG/DNDsIeug1NSjBLcbM27dpy52XGbrlc=
+github.com/eatMoreApple/validate v0.0.0-20210629085334-182b14f69bed/go.mod h1:Ykf8ki/Cf6ijX8YGN/mILpiH10pFx5hzkFb96p/KVNA=
