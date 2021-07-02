@@ -3,6 +3,6 @@ module github.com/eatMoreApple/regia
 go 1.14
 
 require (
-	github.com/eatMoreApple/binder v0.0.0-20210623114348-7121f00b2f22
-	github.com/eatMoreApple/validate v0.0.0-20210629085334-182b14f69bed
+	github.com/eatMoreApple/binder v0.0.0-20210702021245-7faa0d2e605b
+	github.com/eatMoreApple/validate v0.0.0-20210702075723-b2b61dab2792
 )
