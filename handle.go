@@ -21,6 +21,10 @@ func HandleWithParser(parser ...Parser) HandleFunc {
 	return func(context *Context) { context.AddParser(parser...) }
 }
 
+func HandleWithValidator(validator Validator) HandleFunc {
+	return func(context *Context) { context.Validator = validator }
+}
+
 func HandleNotFound(context *Context) { http.NotFound(context.ResponseWriter, context.Request) }
 
 func LogInterceptor(context *Context) {
@@ -30,5 +34,3 @@ func LogInterceptor(context *Context) {
 
 	context.Next()
 }
-
-

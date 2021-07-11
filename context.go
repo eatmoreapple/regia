@@ -22,6 +22,7 @@ type Context struct {
 	FileStorage     FileStorage
 	Parsers         Parsers
 	Authenticators  Authenticators
+	Validator       Validator
 	Params          Params
 	abort           Exit
 	matched         bool
@@ -33,10 +34,11 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.ResponseWriter = writer
 	c.Params = params
 	c.group = group
-	c.FileStorage = LocalFileStorage{}
+	c.FileStorage = localFileStorage
 	c.abort = c.Engine.Abort
 	c.MultipartMemory = c.Engine.MultipartMemory
 	c.index = 0
+	c.Validator = defaultValidator
 }
 
 // reset reset current Context
@@ -53,6 +55,7 @@ func (c *Context) reset() {
 	c.Parsers = nil
 	c.Authenticators = nil
 	c.matched = false
+	c.Validator = nil
 }
 
 // start start to handle current request
@@ -124,10 +127,13 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) error {
 	return c.FileStorage.Save(fileHeader)
 }
 
-// Data analysis request body to destination
+// Data analysis request body to destination and validate
 // Call Context.AddParser to add more support
 func (c *Context) Data(v interface{}) error {
-	return c.Parsers.Parse(c, v)
+	if err := c.Parsers.Parse(c, v); err != nil {
+		return err
+	}
+	return c.Validator.Validate(v)
 }
 
 // AddParser add more Parser for Context.Data
@@ -144,19 +150,6 @@ func (c *Context) User(v interface{}) error {
 // AddAuthenticator add more Authenticator for Context.User
 func (c *Context) AddAuthenticator(a ...Authenticator) {
 	c.Authenticators = append(c.Authenticators, a...)
-}
-
-// ValidateData validate request data is valid
-func (c *Context) ValidateData(validator Validator, v interface{}) error {
-	if err := c.Data(v); err != nil {
-		return err
-	}
-	return validator.Validate(v)
-}
-
-// Validate call ValidateData with defaultValidator
-func (c *Context) Validate(v interface{}) error {
-	return c.ValidateData(defaultValidator, v)
 }
 
 // ContextValue is a goroutine safe context data storage
