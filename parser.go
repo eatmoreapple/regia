@@ -2,7 +2,6 @@ package regia
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 )
 
@@ -12,7 +11,7 @@ const (
 	mimeMultipartPostForm = "multipart/form-data"
 )
 
-var parseError = errors.New(http.StatusText(http.StatusBadRequest))
+var noParserMatched = errors.New("no parser matched")
 
 type Parser interface {
 	// Parse parse incoming bytestream and return a error if parse failed
@@ -21,33 +20,16 @@ type Parser interface {
 	Match(context *Context) bool
 }
 
-type Parsers struct {
-	ps  []Parser
-	err error
-}
+type Parsers []Parser
 
 // Parse start to parse request data
-func (p *Parsers) Parse(context *Context, v interface{}) error {
-	for _, parse := range p.ps {
+func (p Parsers) Parse(context *Context, v interface{}) error {
+	for _, parse := range p {
 		if match := parse.Match(context); match {
 			return parse.Parse(context, v)
 		}
 	}
-	if p.err != nil {
-		return p.err
-	}
-	return parseError
-}
-
-func (p *Parsers) AddParser(parser ...Parser) {
-	if p.ps == nil {
-		p.ps = make([]Parser, 0)
-	}
-	p.ps = append(p.ps, parser...)
-}
-
-func (p *Parsers) SetParseError(e error) {
-	p.err = e
+	return noParserMatched
 }
 
 // FormParser Parser for form data.

@@ -20,7 +20,7 @@ type Context struct {
 	contextValue    *SyncMap
 	Engine          *Engine
 	FileStorage     FileStorage
-	Parsers         *Parsers
+	Parsers         Parsers
 	Authenticators  Authenticators
 	Validator       Validator
 	Params          Params
@@ -39,7 +39,6 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.MultipartMemory = c.Engine.MultipartMemory
 	c.index = 0
 	c.Validator = defaultValidator
-	c.Parsers = new(Parsers)
 }
 
 // reset reset current Context
@@ -139,7 +138,7 @@ func (c *Context) Data(v interface{}) error {
 
 // AddParser add more Parser for Context.Data
 func (c *Context) AddParser(p ...Parser) {
-	c.Parsers.AddParser(p...)
+	c.Parsers = append(c.Parsers, p...)
 }
 
 // User sets the user on the current request

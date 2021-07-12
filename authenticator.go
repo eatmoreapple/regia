@@ -16,5 +16,6 @@ func (a Authenticators) RunAuthenticate(context *Context, v interface{}) error {
 			return nil
 		}
 	}
-	return AuthenticationFailed{}
+
+	return AuthenticationFailed
 }
