@@ -26,6 +26,8 @@ type Context struct {
 	Params          Params
 	abort           Exit
 	matched         bool
+	// If it not return into pool
+	doNotNeedReset bool
 }
 
 // init prepare for this request
@@ -246,4 +248,8 @@ func (c *Context) ServeFile(path string) {
 // ServeContent Shortcut for http.ServeContent
 func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSeeker) {
 	http.ServeContent(c.ResponseWriter, c.Request, name, modTime, content)
+}
+
+func (c *Context) Reset(r bool) {
+	c.doNotNeedReset = r
 }

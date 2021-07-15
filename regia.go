@@ -127,8 +127,10 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	context.init(request, writer, params, group)
 	context.start()
-	context.reset()
-	e.pool.Put(context)
+	if !context.doNotNeedReset {
+		context.reset()
+		e.pool.Put(context)
+	}
 }
 
 // New Constructor for Engine
