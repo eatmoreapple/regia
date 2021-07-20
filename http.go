@@ -1,7 +1,6 @@
 package regia
 
 import (
-	"errors"
 	"net/http"
 )
 
@@ -50,8 +49,3 @@ func writeContentType(writer http.ResponseWriter, cT string) {
 	writer.Header().Del(contentType)
 	writer.Header().Set(contentType, cT)
 }
-
-var (
-	AuthenticationFailed = errors.New(http.StatusText(http.StatusUnauthorized))
-	BadRequest           = errors.New(http.StatusText(http.StatusBadRequest))
-)

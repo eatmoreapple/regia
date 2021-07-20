@@ -21,7 +21,6 @@ type Context struct {
 	Engine          *Engine
 	FileStorage     FileStorage
 	Parsers         Parsers
-	Authenticators  Authenticators
 	Validator       Validator
 	Params          Params
 	abort           Exit
@@ -55,7 +54,6 @@ func (c *Context) reset() {
 	c.MultipartMemory = defaultMultipartMemory
 	c.contextValue = nil
 	c.Parsers = nil
-	c.Authenticators = nil
 	c.matched = false
 	c.Validator = nil
 }
@@ -141,17 +139,6 @@ func (c *Context) Data(v interface{}) error {
 // AddParser add more Parser for Context.Data
 func (c *Context) AddParser(p ...Parser) {
 	c.Parsers = append(c.Parsers, p...)
-}
-
-// User sets the user on the current request
-// Call Context.AddAuthenticator to add more support
-func (c *Context) User(v interface{}) error {
-	return c.Authenticators.RunAuthenticate(c, v)
-}
-
-// AddAuthenticator add more Authenticator for Context.User
-func (c *Context) AddAuthenticator(a ...Authenticator) {
-	c.Authenticators = append(c.Authenticators, a...)
 }
 
 // ContextValue is a goroutine safe context data storage
