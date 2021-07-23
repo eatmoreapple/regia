@@ -122,6 +122,6 @@ func (b *BluePrint) getCleanedRequestMapping(mapping map[string]string) map[stri
 	return cleanedMapping
 }
 
-func NewBranch() *BluePrint {
+func NewBluePrint() *BluePrint {
 	return &BluePrint{}
 }

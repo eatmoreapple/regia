@@ -137,7 +137,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 func New() *Engine {
 	engine := &Engine{
 		Router:          make(HttpRouter),
-		BluePrint:       NewBranch(),
+		BluePrint:       NewBluePrint(),
 		NotFoundHandle:  HandleNotFound,
 		Warehouse:       new(SyncMap),
 		MultipartMemory: defaultMultipartMemory,
