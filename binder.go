@@ -9,13 +9,13 @@ type Binder interface {
 type QueryBinder struct{}
 
 func (q QueryBinder) Bind(context *Context, v interface{}) error {
-	return binder.BindForm(context.Request.URL.Query(), v)
+	return binder.BindForm(context.Query(), v)
 }
 
 type FormBinder struct{}
 
 func (q FormBinder) Bind(context *Context, v interface{}) error {
-	return binder.BindForm(context.Request.PostForm, v)
+	return binder.BindForm(context.Form(), v)
 }
 
 type JsonBodyBinder struct{}

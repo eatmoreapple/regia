@@ -41,10 +41,16 @@ type Engine struct {
 	pool sync.Pool
 
 	Abort Exit
+
+	FileStorage FileStorage
+
+	ContextValidator Validator
 }
 
 func (e *Engine) dispatchContext() *Context {
-	return &Context{Engine: e}
+	return &Context{
+		Engine: e,
+	}
 }
 
 // Start implement Starter and register all handles to router
@@ -136,12 +142,14 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 // New Constructor for Engine
 func New() *Engine {
 	engine := &Engine{
-		Router:          make(HttpRouter),
-		BluePrint:       NewBluePrint(),
-		NotFoundHandle:  HandleNotFound,
-		Warehouse:       new(SyncMap),
-		MultipartMemory: defaultMultipartMemory,
-		Abort:           exit{},
+		Router:           make(HttpRouter),
+		BluePrint:        NewBluePrint(),
+		NotFoundHandle:   HandleNotFound,
+		Warehouse:        new(SyncMap),
+		MultipartMemory:  defaultMultipartMemory,
+		Abort:            exit{},
+		FileStorage:      localFileStorage,
+		ContextValidator: defaultValidator,
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))

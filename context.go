@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -17,16 +18,22 @@ type Context struct {
 	// Mat multipart form memory size
 	// default 32M
 	MultipartMemory int64
-	contextValue    *SyncMap
-	Engine          *Engine
-	FileStorage     FileStorage
-	Parsers         Parsers
-	Validator       Validator
-	Params          Params
-	abort           Exit
-	matched         bool
+	// context data carrier
+	contextValue *SyncMap
+	Engine       *Engine
+	FileStorage  FileStorage
+	Parsers      Parsers
+	Validator    Validator
+	Params       Params
+	abort        Exit
+	matched      bool
 	// If it not return into pool
 	doNotNeedReset bool
+
+	// query cache
+	queryCache url.Values
+	// form cache
+	formCache url.Values
 }
 
 // init prepare for this request
@@ -35,11 +42,10 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.ResponseWriter = writer
 	c.Params = params
 	c.group = group
-	c.FileStorage = localFileStorage
 	c.abort = c.Engine.Abort
+	c.FileStorage = c.Engine.FileStorage
 	c.MultipartMemory = c.Engine.MultipartMemory
-	c.index = 0
-	c.Validator = defaultValidator
+	c.Validator = c.Engine.ContextValidator
 }
 
 // reset reset current Context
@@ -56,6 +62,8 @@ func (c *Context) reset() {
 	c.Parsers = nil
 	c.matched = false
 	c.Validator = nil
+	c.queryCache = nil
+	c.formCache = nil
 }
 
 // start start to handle current request
@@ -149,6 +157,37 @@ func (c *Context) ContextValue() *SyncMap {
 	return c.contextValue
 }
 
+// Query is a shortcut for c.Request.URL.Query()
+// but can cached value for current context
+func (c *Context) Query() url.Values {
+	if c.queryCache == nil {
+		c.queryCache = c.Request.URL.Query()
+	}
+	return c.queryCache
+}
+
+// QueryValue get value from url query
+func (c *Context) QueryValue(key string) Value {
+	value := c.Query().Get(key)
+	return Value(value)
+}
+
+// Query is a shortcut for c.Request.PostForm
+// but can cached value for current context
+func (c *Context) Form() url.Values {
+	if c.formCache == nil {
+		c.ParseForm()
+		c.formCache = c.Request.PostForm
+	}
+	return c.formCache
+}
+
+// FormValue get value from url query
+func (c *Context) FormValue(key string) Value {
+	value := c.Form().Get(key)
+	return Value(value)
+}
+
 // Bind bind request to destination
 func (c *Context) Bind(binder Binder, v interface{}) error {
 	return binder.Bind(c, v)
@@ -237,6 +276,8 @@ func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSe
 	http.ServeContent(c.ResponseWriter, c.Request, name, modTime, content)
 }
 
+// Reset can let context not return to the pool
+// context.Reset(false)
 func (c *Context) Reset(r bool) {
 	c.doNotNeedReset = r
 }
