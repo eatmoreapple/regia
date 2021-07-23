@@ -73,7 +73,4 @@ func (c ConsoleLog) Error(text string) {
 	c.Println(formatColor(colorRed, text))
 }
 
-var Logger = ConsoleLog{log.New(os.Stdout, "", 0)}
-
-// ensure ConsoleLog impl Log
-var _ Log = Logger
+var Logger Log = ConsoleLog{log.New(os.Stdout, "", 0)}
