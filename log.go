@@ -2,7 +2,9 @@ package regia
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"strconv"
 	"time"
 )
@@ -51,30 +53,27 @@ type Log interface {
 }
 
 // ConsoleLog implement Log
-type ConsoleLog struct{}
+type ConsoleLog struct {
+	*log.Logger
+}
 
 func (c ConsoleLog) Info(text string) {
-	text = c.Format(info, text)
-	fmt.Println(formatColor(colorGreen, text))
+	c.Println(formatColor(colorGreen, text))
 }
 
 func (c ConsoleLog) Debug(text string) {
-	text = c.Format(debug, text)
-	fmt.Println(formatColor(colorMagenta, text))
+	c.Println(formatColor(colorMagenta, text))
 }
 
 func (c ConsoleLog) Warn(text string) {
-	text = c.Format(warn, text)
-	fmt.Println(formatColor(colorYellow, text))
+	c.Println(formatColor(colorYellow, text))
 }
 
 func (c ConsoleLog) Error(text string) {
-	text = c.Format(danger, text)
-	fmt.Println(formatColor(colorRed, text))
+	c.Println(formatColor(colorRed, text))
 }
 
-func (c ConsoleLog) Format(level, text string) string {
-	return fmt.Sprintf("[%-5s]  %-20s    %s", level, time.Now().Format(timeFormat), text)
-}
+var Logger = ConsoleLog{log.New(os.Stdout, "", 0)}
 
-var Logger Log = ConsoleLog{}
+// ensure ConsoleLog impl Log
+var _ Log = Logger
