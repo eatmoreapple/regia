@@ -168,27 +168,27 @@ func (v Value) Unmarshal(f Unmarshaler, dst interface{}) error {
 type Values []Value
 
 type Warehouse interface {
-	Set(key string, value interface{})
-	Get(key string) (value interface{}, exist bool)
+	Set(key interface{}, value interface{})
+	Get(key interface{}) (value interface{}, exist bool)
 }
 
 var _ Warehouse = new(SyncMap)
 
 type SyncMap struct {
-	item map[string]interface{}
+	item map[interface{}]interface{}
 	mu   sync.RWMutex
 }
 
-func (d *SyncMap) Set(key string, value interface{}) {
+func (d *SyncMap) Set(key interface{}, value interface{}) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.item == nil {
-		d.item = make(map[string]interface{})
+		d.item = make(map[interface{}]interface{})
 	}
 	d.item[key] = value
 }
 
-func (d *SyncMap) Get(key string) (value interface{}, exist bool) {
+func (d *SyncMap) Get(key interface{}) (value interface{}, exist bool) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	value, exist = d.item[key]
@@ -205,7 +205,7 @@ func (d *SyncMap) Reset() {
 	d.Clear()
 }
 
-func (d *SyncMap) GetString(key string, def ...string) string {
+func (d *SyncMap) GetString(key interface{}, def ...string) string {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -220,7 +220,7 @@ func (d *SyncMap) GetString(key string, def ...string) string {
 	return ""
 }
 
-func (d *SyncMap) GetInt(key string, def ...int) int {
+func (d *SyncMap) GetInt(key interface{}, def ...int) int {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -235,7 +235,7 @@ func (d *SyncMap) GetInt(key string, def ...int) int {
 	return 0
 }
 
-func (d *SyncMap) GetInt8(key string, def ...int8) int8 {
+func (d *SyncMap) GetInt8(key interface{}, def ...int8) int8 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -250,7 +250,7 @@ func (d *SyncMap) GetInt8(key string, def ...int8) int8 {
 	return 0
 }
 
-func (d *SyncMap) GetInt16(key string, def ...int16) int16 {
+func (d *SyncMap) GetInt16(key interface{}, def ...int16) int16 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -265,7 +265,7 @@ func (d *SyncMap) GetInt16(key string, def ...int16) int16 {
 	return 0
 }
 
-func (d *SyncMap) GetInt32(key string, def ...int32) int32 {
+func (d *SyncMap) GetInt32(key interface{}, def ...int32) int32 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -280,7 +280,7 @@ func (d *SyncMap) GetInt32(key string, def ...int32) int32 {
 	return 0
 }
 
-func (d *SyncMap) GetInt64(key string, def ...int64) int64 {
+func (d *SyncMap) GetInt64(key interface{}, def ...int64) int64 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -295,7 +295,7 @@ func (d *SyncMap) GetInt64(key string, def ...int64) int64 {
 	return 0
 }
 
-func (d *SyncMap) GetUint(key string, def ...uint) uint {
+func (d *SyncMap) GetUint(key interface{}, def ...uint) uint {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -310,7 +310,7 @@ func (d *SyncMap) GetUint(key string, def ...uint) uint {
 	return 0
 }
 
-func (d *SyncMap) GetUint8(key string, def ...uint8) uint8 {
+func (d *SyncMap) GetUint8(key interface{}, def ...uint8) uint8 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -325,7 +325,7 @@ func (d *SyncMap) GetUint8(key string, def ...uint8) uint8 {
 	return 0
 }
 
-func (d *SyncMap) GetUint16(key string, def ...uint16) uint16 {
+func (d *SyncMap) GetUint16(key interface{}, def ...uint16) uint16 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -340,7 +340,7 @@ func (d *SyncMap) GetUint16(key string, def ...uint16) uint16 {
 	return 0
 }
 
-func (d *SyncMap) GetUint32(key string, def ...uint32) uint32 {
+func (d *SyncMap) GetUint32(key interface{}, def ...uint32) uint32 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -355,7 +355,7 @@ func (d *SyncMap) GetUint32(key string, def ...uint32) uint32 {
 	return 0
 }
 
-func (d *SyncMap) GetUint64(key string, def ...uint64) uint64 {
+func (d *SyncMap) GetUint64(key interface{}, def ...uint64) uint64 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -370,7 +370,7 @@ func (d *SyncMap) GetUint64(key string, def ...uint64) uint64 {
 	return 0
 }
 
-func (d *SyncMap) GetFloat32(key string, def ...float32) float32 {
+func (d *SyncMap) GetFloat32(key interface{}, def ...float32) float32 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -385,7 +385,7 @@ func (d *SyncMap) GetFloat32(key string, def ...float32) float32 {
 	return 0
 }
 
-func (d *SyncMap) GetFloat64(key string, def ...float64) float64 {
+func (d *SyncMap) GetFloat64(key interface{}, def ...float64) float64 {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
@@ -400,7 +400,7 @@ func (d *SyncMap) GetFloat64(key string, def ...float64) float64 {
 	return 0
 }
 
-func (d *SyncMap) GetBool(key string, def ...bool) bool {
+func (d *SyncMap) GetBool(key interface{}, def ...bool) bool {
 	value, exist := d.Get(key)
 	if !exist {
 		if len(def) > 0 {
