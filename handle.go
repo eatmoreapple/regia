@@ -2,6 +2,7 @@ package regia
 
 import (
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,29 @@ func HandleWithParser(parser ...Parser) HandleFunc {
 
 func HandleWithValidator(validator Validator) HandleFunc {
 	return func(context *Context) { context.Validator = validator }
+}
+
+func HandleWithFileStorage(fs FileStorage) HandleFunc {
+	return func(context *Context) { context.FileStorage = fs }
+}
+
+func HandleWithAbort(e Exit) HandleFunc {
+	return func(context *Context) { context.abort = e }
+}
+
+func HandleOptions(allowMethods ...string) HandleFunc {
+	if allowMethods == nil {
+		allowMethods = httpMethods[:]
+	}
+	return func(context *Context) {
+		if context.Request.Method == http.MethodOptions {
+			context.SetHeader("Allow", strings.Join(allowMethods, ", "))
+			context.SetHeader("Content-Length", "0")
+			context.SetStatus(http.StatusNoContent)
+			context.Abort()
+		}
+		context.Next()
+	}
 }
 
 func HandleNotFound(context *Context) { http.NotFound(context.ResponseWriter, context.Request) }
