@@ -1,6 +1,6 @@
 package regia
 
-import "github.com/eatMoreApple/binder"
+import "github.com/eatmoreapple/binder"
 
 type Binder interface {
 	Bind(request *Context, v interface{}) error

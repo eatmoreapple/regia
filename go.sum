@@ -1,4 +1,4 @@
-github.com/eatMoreApple/binder v0.0.0-20210723071340-72314a193ce9 h1:OdVo7CIKe+QhGRTMth/Q3XKibGho9kQ3ajMNoniyMqY=
-github.com/eatMoreApple/binder v0.0.0-20210723071340-72314a193ce9/go.mod h1:ovb52iORoBuens/j5lLlkyA3TePTD/pb6/w+BzgGTNI=
-github.com/eatMoreApple/validate v0.0.0-20210714114111-b9f9070dbfa5 h1:kccMc1B7IgHBiicQ1aDRDFnyL+UaABH130Voi9/9jWY=
-github.com/eatMoreApple/validate v0.0.0-20210714114111-b9f9070dbfa5/go.mod h1:Ykf8ki/Cf6ijX8YGN/mILpiH10pFx5hzkFb96p/KVNA=
+github.com/eatmoreapple/binder v0.0.0-20210726045100-3f8f79df2a84 h1:cBC7qBoRx/0/H4GVyXoAhoyGbBtDCFTgFBhcTpzTxIM=
+github.com/eatmoreapple/binder v0.0.0-20210726045100-3f8f79df2a84/go.mod h1:LS7ELZOgBUhJuN6HbfZ/1hVN4YWqe/tbYryifw+4pFY=
+github.com/eatmoreapple/validate v0.0.0-20210726045835-22e15cd5e8a4 h1:/7SacP6YV8LWuwEhJIsSh4HsMo9ja5biT7XEKrlT/sM=
+github.com/eatmoreapple/validate v0.0.0-20210726045835-22e15cd5e8a4/go.mod h1:Lb9A4nkTBMK+vJ3eiB3QDgzS1S6AFw4N5vULAi733Dk=

@@ -1,6 +1,6 @@
 package regia
 
-import "github.com/eatMoreApple/validate"
+import "github.com/eatmoreapple/validate"
 
 type Validator interface {
 	Validate(v interface{}) error
