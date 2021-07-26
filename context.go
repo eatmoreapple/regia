@@ -172,7 +172,13 @@ func (c *Context) QueryValue(key string) Value {
 	return Value(value)
 }
 
-// Query is a shortcut for c.Request.PostForm
+// QueryValues get value slice from url query
+func (c *Context) QueryValues(key string) Values {
+	values := c.Query()[key]
+	return NewValues(values)
+}
+
+// Form is a shortcut for c.Request.PostForm
 // but can cached value for current context
 func (c *Context) Form() url.Values {
 	if c.formCache == nil {
@@ -182,10 +188,16 @@ func (c *Context) Form() url.Values {
 	return c.formCache
 }
 
-// FormValue get value from url query
+// FormValue get value from post value
 func (c *Context) FormValue(key string) Value {
 	value := c.Form().Get(key)
 	return Value(value)
+}
+
+// FormValues get value slice from post value
+func (c *Context) FormValues(key string) Values {
+	value := c.Form()[key]
+	return NewValues(value)
 }
 
 // Bind bind request to destination

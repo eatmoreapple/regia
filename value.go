@@ -167,6 +167,14 @@ func (v Value) Unmarshal(f Unmarshaler, dst interface{}) error {
 
 type Values []Value
 
+func NewValues(values []string) Values {
+	var v = make(Values, len(values))
+	for _, item := range values {
+		v = append(v, Value(item))
+	}
+	return v
+}
+
 type Warehouse interface {
 	Set(key interface{}, value interface{})
 	Get(key interface{}) (value interface{}, exist bool)
