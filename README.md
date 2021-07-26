@@ -9,7 +9,7 @@ It is simple, helpful and with high performance. Build your own idea with it !
 Golang version 1.11 + required
 
 ```shell
-go get github.com/eatMoreApple/regia
+go get github.com/eatmoreapple/regia
 ```
 
 
@@ -24,7 +24,7 @@ $ touch main.go
 ```go
 package main
 
-import "github.com/eatMoreApple/regia"
+import "github.com/eatmoreapple/regia"
 
 func main() {
 	engine := regia.Default()
