@@ -25,7 +25,7 @@ type FileStorage interface {
 	Save(fileHeader *multipart.FileHeader) error
 }
 
-var localFileStorage FileStorage = LocalFileStorage{}
+var _ FileStorage = LocalFileStorage{}
 
 type LocalFileStorage struct {
 	mediaRoot string

@@ -182,6 +182,8 @@ type Warehouse interface {
 
 var _ Warehouse = new(SyncMap)
 
+var syncMapPool = sync.Pool{New: func() interface{} { return new(SyncMap) }}
+
 type SyncMap struct {
 	item map[interface{}]interface{}
 	mu   sync.RWMutex
@@ -189,24 +191,24 @@ type SyncMap struct {
 
 func (d *SyncMap) Set(key interface{}, value interface{}) {
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	if d.item == nil {
 		d.item = make(map[interface{}]interface{})
 	}
 	d.item[key] = value
+	d.mu.Unlock()
 }
 
 func (d *SyncMap) Get(key interface{}) (value interface{}, exist bool) {
 	d.mu.RLock()
-	defer d.mu.RUnlock()
 	value, exist = d.item[key]
+	d.mu.RUnlock()
 	return
 }
 
 func (d *SyncMap) Clear() {
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	d.item = nil
+	d.mu.Unlock()
 }
 
 func (d *SyncMap) Reset() {

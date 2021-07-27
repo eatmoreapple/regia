@@ -133,7 +133,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	context.init(request, writer, params, group)
 	context.start()
-	if !context.doNotNeedReset {
+	if !context.escape {
 		context.reset()
 		e.pool.Put(context)
 	}
@@ -148,8 +148,8 @@ func New() *Engine {
 		Warehouse:        new(SyncMap),
 		MultipartMemory:  defaultMultipartMemory,
 		Abort:            exit{},
-		FileStorage:      localFileStorage,
-		ContextValidator: defaultValidator,
+		FileStorage:      LocalFileStorage{},
+		ContextValidator: DefaultValidator{},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))

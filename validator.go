@@ -12,4 +12,4 @@ func (d DefaultValidator) Validate(v interface{}) error {
 	return validate.Validate(v)
 }
 
-var defaultValidator Validator = DefaultValidator{}
+var _ Validator = DefaultValidator{}

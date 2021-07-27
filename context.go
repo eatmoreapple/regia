@@ -28,7 +28,7 @@ type Context struct {
 	abort        Exit
 	matched      bool
 	// If it not return into pool
-	doNotNeedReset bool
+	escape bool
 
 	// query cache
 	queryCache url.Values
@@ -64,6 +64,10 @@ func (c *Context) reset() {
 	c.Validator = nil
 	c.queryCache = nil
 	c.formCache = nil
+	if c.contextValue != nil {
+		c.contextValue.Clear()
+		syncMapPool.Put(c.contextValue)
+	}
 }
 
 // start start to handle current request
@@ -152,7 +156,7 @@ func (c *Context) AddParser(p ...Parser) {
 // ContextValue is a goroutine safe context data storage
 func (c *Context) ContextValue() *SyncMap {
 	if c.contextValue == nil {
-		c.contextValue = new(SyncMap)
+		c.contextValue = syncMapPool.Get().(*SyncMap)
 	}
 	return c.contextValue
 }
@@ -288,8 +292,7 @@ func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSe
 	http.ServeContent(c.ResponseWriter, c.Request, name, modTime, content)
 }
 
-// Reset can let context not return to the pool
-// context.Reset(false)
-func (c *Context) Reset(r bool) {
-	c.doNotNeedReset = r
+// Escape can let context not return to the pool
+func (c *Context) Escape() {
+	c.escape = true
 }
