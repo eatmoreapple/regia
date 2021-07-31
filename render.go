@@ -3,7 +3,6 @@ package regia
 import (
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"net/http"
 )
 
@@ -15,7 +14,7 @@ type JsonRender struct{}
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	data, err := js.Marshal(v)
+	data, err := JSON.Marshal(v)
 	if err != nil {
 		return err
 	}
@@ -40,25 +39,15 @@ var (
 	xmlRender  = XmlRender{}
 )
 
-type jsonTransformer interface {
+type Marshaller interface {
 	Unmarshal(data []byte, v interface{}) error
 	Marshal(v interface{}) ([]byte, error)
 }
 
-type defaultJsonTransformer struct{}
+type JsonMarshal struct{}
 
-func (d defaultJsonTransformer) Unmarshal(data []byte, v interface{}) error {
-	return json.Unmarshal(data, v)
-}
+func (JsonMarshal) Unmarshal(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
 
-func (d defaultJsonTransformer) Marshal(v interface{}) ([]byte, error) { return json.Marshal(v) }
+func (JsonMarshal) Marshal(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
-var js jsonTransformer = defaultJsonTransformer{}
-
-func SetJsonTransformer(j jsonTransformer) error {
-	if j == nil {
-		return errors.New("jsonTransformer can not be nil")
-	}
-	js = j
-	return nil
-}
+var JSON Marshaller = JsonMarshal{}
