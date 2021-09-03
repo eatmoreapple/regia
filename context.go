@@ -26,8 +26,9 @@ type Context struct {
 	Validator    Validator
 	Params       Params
 	abort        Exit
-	matched      bool
-	// If it not return into pool
+	// if url matched
+	matched bool
+	// escape is a flag decide if is return to the context pool
 	escape bool
 
 	// query cache
@@ -48,7 +49,7 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.Validator = c.Engine.ContextValidator
 }
 
-// reset reset current Context
+// reset current Context
 func (c *Context) reset() {
 	c.index = 0
 	c.Request = nil
@@ -65,12 +66,13 @@ func (c *Context) reset() {
 	c.queryCache = nil
 	c.formCache = nil
 	if c.contextValue != nil {
+		// clear and return to the syncMapPool
 		c.contextValue.Clear()
 		syncMapPool.Put(c.contextValue)
 	}
 }
 
-// start start to handle current request
+// start to handle current request
 func (c *Context) start() {
 	defer c.recover()
 	c.Next()
@@ -92,7 +94,7 @@ func (c *Context) IsMatched() bool {
 	return c.matched
 }
 
-// Next call next handle
+// Next call handle
 func (c *Context) Next() {
 	c.index++
 	for c.index <= len(c.group) {
@@ -162,7 +164,7 @@ func (c *Context) ContextValue() *SyncMap {
 }
 
 // Query is a shortcut for c.Request.URL.Query()
-// but can cached value for current context
+// but cached value for current context
 func (c *Context) Query() url.Values {
 	if c.queryCache == nil {
 		c.queryCache = c.Request.URL.Query()
@@ -170,20 +172,20 @@ func (c *Context) Query() url.Values {
 	return c.queryCache
 }
 
-// QueryValue get value from url query
+// QueryValue get Value from url query
 func (c *Context) QueryValue(key string) Value {
 	value := c.Query().Get(key)
 	return Value(value)
 }
 
-// QueryValues get value slice from url query
+// QueryValues get Value slice from url query
 func (c *Context) QueryValues(key string) Values {
 	values := c.Query()[key]
 	return NewValues(values)
 }
 
 // Form is a shortcut for c.Request.PostForm
-// but can cached value for current context
+// but value for current context
 func (c *Context) Form() url.Values {
 	if c.formCache == nil {
 		c.ParseForm()
@@ -192,13 +194,13 @@ func (c *Context) Form() url.Values {
 	return c.formCache
 }
 
-// FormValue get value from post value
+// FormValue get Value from post value
 func (c *Context) FormValue(key string) Value {
 	value := c.Form().Get(key)
 	return Value(value)
 }
 
-// FormValues get value slice from post value
+// FormValues get Values slice from post value
 func (c *Context) FormValues(key string) Values {
 	value := c.Form()[key]
 	return NewValues(value)

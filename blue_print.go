@@ -85,7 +85,7 @@ func (b *BluePrint) Include(prefix string, branch *BluePrint) {
 	}
 }
 
-// Bind bind legal handleFunc with given mappings from struct
+// Bind legal handleFunc with given mappings from struct
 func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]string) {
 	for _, mapping := range mappings {
 		cleanedMapping := b.getCleanedRequestMapping(mapping)

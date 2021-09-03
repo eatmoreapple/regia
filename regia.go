@@ -1,3 +1,7 @@
+// Copyright 2021 eatMoreApple.  All rights reserved.
+// Use of this source code is governed by a GNU style
+// license that can be found in the LICENSE file.
+
 package regia
 
 import (
@@ -15,8 +19,8 @@ const (
 
 // Engine is a collection of core components of the whole service
 type Engine struct {
-	// The branch are used to store the handler.
-	// All handlers are going to register in the router
+	// BluePrint is used for store the handler.
+	// All handlers are going to register into it
 	*BluePrint
 
 	// Router is a module used to register handle and distribute request
@@ -30,20 +34,25 @@ type Engine struct {
 	Interceptors HandleFuncGroup
 
 	// Starter will run when the service starts
-	// and it only run once
+	// it only runs once
 	Starters []Starter
 
 	// Warehouse is used to store information
 	Warehouse Warehouse
 
+	// MultipartMemory defined max request body size
 	MultipartMemory int64
 
+	// Context pool
 	pool sync.Pool
 
+	// global Context Abort
 	Abort Exit
 
+	// global Context FileStorage
 	FileStorage FileStorage
 
+	// global Context ContextValidator
 	ContextValidator Validator
 }
 
@@ -152,6 +161,7 @@ func New() *Engine {
 		ContextValidator: DefaultValidator{},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
+	// Add default parser to make sure that Context could be worked
 	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))
 	return engine
 }
@@ -167,6 +177,8 @@ func Default() *Engine {
 // Map is a shortcut fot map[string]interface{}
 type Map map[string]interface{}
 
+// unsafe string to byte
+// without memory copy
 func stringToByte(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&*(*reflect.StringHeader)(unsafe.Pointer(&s))))
 }
