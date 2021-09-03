@@ -182,3 +182,9 @@ type Map map[string]interface{}
 func stringToByte(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&*(*reflect.StringHeader)(unsafe.Pointer(&s))))
 }
+
+// ListenAndServeTLS acts identically to Run
+func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string, handler http.Handler) error {
+	e.init()
+	return http.ListenAndServeTLS(addr, certFile, keyFile, handler)
+}
