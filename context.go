@@ -17,8 +17,9 @@ const defaultMultipartMemory = 32 << 20
 type Context struct {
 	*http.Request
 	http.ResponseWriter
-	index int
-	group HandleFuncGroup
+	index      int
+	abortIndex int
+	group      HandleFuncGroup
 	// Mat multipart form memory size
 	// default 32M
 	MultipartMemory int64
@@ -118,7 +119,10 @@ func (c *Context) SetAbort(abort Exit) {
 func (c *Context) Abort() { c.AbortWith(c.abort) }
 
 // AbortWith skip current handle and call given exit
-func (c *Context) AbortWith(exit Exit) { panic(exit) }
+func (c *Context) AbortWith(exit Exit) {
+	c.abortIndex = c.index - 1
+	panic(exit)
+}
 
 // Flusher Make http.ResponseWriter as http.Flusher
 func (c *Context) Flusher() http.Flusher { return c.ResponseWriter.(http.Flusher) }
@@ -301,4 +305,17 @@ func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSe
 // Escape can let context not return to the pool
 func (c *Context) Escape() {
 	c.escape = true
+}
+
+// IsAborted return that context is aborted
+func (c Context) IsAborted() bool {
+	return c.abortIndex != 0
+}
+
+// AbortHandler returns a handler which called at lasted
+func (c Context) AbortHandler() HandleFunc {
+	if !c.IsAborted() {
+		return nil
+	}
+	return c.group[c.abortIndex]
 }
