@@ -33,7 +33,7 @@ func GetFileContentType(file multipart.File) (string, error) {
 }
 
 type FileStorage interface {
-	Save(fileHeader *multipart.FileHeader) error
+	Save(fileHeader *multipart.FileHeader) (string, error)
 }
 
 var _ FileStorage = LocalFileStorage{}
@@ -49,10 +49,10 @@ func (l *LocalFileStorage) SetMediaRouter(mediaRoot string) {
 
 // Save implement FileStorage
 // Uploads the form file to local
-func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) error {
+func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error) {
 	src, err := fileHeader.Open()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer src.Close()
 
@@ -62,26 +62,26 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) error {
 		if err != nil {
 			if os.IsNotExist(err) {
 				if err = os.Mkdir(l.mediaRoot, 0666); err != nil {
-					return err
+					return "", err
 				}
 			} else {
-				return err
+				return "", err
 			}
 		}
 	}
 
 	dst, err := l.getAlternativeName(fileHeader.Filename)
 	if err != nil {
-		return err
+		return "", err
 	}
 	out, err := os.Create(dst)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, src)
-	return err
+	return dst, err
 }
 
 // Return an alternative filename, by adding an underscore and a random 7

@@ -129,22 +129,22 @@ func (c *Context) Flusher() http.Flusher { return c.ResponseWriter.(http.Flusher
 
 // SaveUploadFile will call Context.FileStorage
 // default save file to local path
-func (c *Context) SaveUploadFile(name string) error {
+func (c *Context) SaveUploadFile(name string) (string, error) {
 	return c.SaveUploadFileWith(c.FileStorage, name)
 }
 
 // SaveUploadFileWith call given FileStorage with upload file
-func (c *Context) SaveUploadFileWith(fs FileStorage, name string) error {
+func (c *Context) SaveUploadFileWith(fs FileStorage, name string) (string, error) {
 	if fs == nil {
-		return errors.New("`FileStorage` can be nil type")
+		return "", errors.New("`FileStorage` can be nil type")
 	}
 	file, fileHeader, err := c.Request.FormFile(name)
 	if err != nil {
-		return err
+		return "", err
 	}
 	// try to close return file
 	if err = file.Close(); err != nil {
-		return err
+		return "", err
 	}
 	return c.FileStorage.Save(fileHeader)
 }
