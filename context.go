@@ -83,7 +83,7 @@ func (c *Context) start() {
 	c.Next()
 }
 
-// i do not think it is a good design
+// I do not think it is a good design
 func (c *Context) recover() {
 	if rec := recover(); rec != nil {
 		if e, ok := rec.(Exit); ok {

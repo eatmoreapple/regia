@@ -18,7 +18,7 @@ const (
 var noParserMatched = errors.New("no parser matched")
 
 type Parser interface {
-	// Parse parse incoming bytestream and return a error if parse failed
+	// Parse parsed incoming byte stream and return an error if parse failed
 	Parse(context *Context, v interface{}) error
 	// Match define that if we should parse this request
 	Match(context *Context) bool
