@@ -84,9 +84,9 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) error {
 	return err
 }
 
-//Return an alternative filename, by adding an underscore and a random 7
-//character alphanumeric string (before the file extension, if one
-//exists) to the filename
+// Return an alternative filename, by adding an underscore and a random 7
+// character alphanumeric string (before the file extension, if one exists
+// to the filename
 func (l LocalFileStorage) getAlternativeName(filename string) (string, error) {
 	for {
 		dst := path.Join(l.mediaRoot, filename)
