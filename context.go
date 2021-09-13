@@ -308,14 +308,32 @@ func (c *Context) Escape() {
 }
 
 // IsAborted return that context is aborted
-func (c Context) IsAborted() bool {
+func (c *Context) IsAborted() bool {
 	return c.abortIndex != 0
 }
 
 // AbortHandler returns a handler which called at lasted
-func (c Context) AbortHandler() HandleFunc {
+func (c *Context) AbortHandler() HandleFunc {
 	if !c.IsAborted() {
 		return nil
 	}
 	return c.group[c.abortIndex]
+}
+
+// AbortWithJSON write json response and exit
+func (c *Context) AbortWithJSON(data interface{}) {
+	_ = c.JSON(data)
+	c.Abort()
+}
+
+// AbortWithXML write xml response and exit
+func (c *Context) AbortWithXML(data interface{}) {
+	_ = c.XML(data)
+	c.Abort()
+}
+
+// AbortWithText write string response and exit
+func (c *Context) AbortWithText(text string) {
+	_, _ = c.Text(text)
+	c.Abort()
 }
