@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -336,4 +337,10 @@ func (c *Context) AbortWithXML(data interface{}) {
 func (c *Context) AbortWithText(text string) {
 	_, _ = c.Text(text)
 	c.Abort()
+}
+
+// IsWebsocket returns true if the request headers indicate that a websocket
+func (c *Context) IsWebsocket() bool {
+	return strings.Contains(strings.ToLower(c.Request.Header.Get("Connection")), "upgrade") &&
+		strings.EqualFold(c.Request.Header.Get("Upgrade"), "websocket")
 }
