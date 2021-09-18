@@ -54,6 +54,8 @@ type Engine struct {
 
 	// global Context ContextValidator
 	ContextValidator Validator
+
+	server *http.Server
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -122,7 +124,8 @@ func (e *Engine) init() {
 // Run Start Listen and serve
 func (e *Engine) Run(addr string) error {
 	e.init()
-	return http.ListenAndServe(addr, e)
+	e.server = &http.Server{Addr: addr, Handler: e}
+	return e.server.ListenAndServe()
 }
 
 // GetMethodTree Getter for e.BluePrint.methodsTree
@@ -186,5 +189,11 @@ func stringToByte(s string) []byte {
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string, handler http.Handler) error {
 	e.init()
-	return http.ListenAndServeTLS(addr, certFile, keyFile, handler)
+	e.server = &http.Server{Addr: addr, Handler: e}
+	return e.server.ListenAndServeTLS(certFile, keyFile)
+}
+
+// Server is a getter for Engine
+func (e *Engine) Server() *http.Server {
+	return e.server
 }
