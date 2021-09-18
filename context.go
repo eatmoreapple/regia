@@ -16,11 +16,11 @@ import (
 const defaultMultipartMemory = 32 << 20
 
 type Context struct {
-	*http.Request
-	http.ResponseWriter
-	index      int
-	abortIndex int
-	group      HandleFuncGroup
+	Request        *http.Request
+	ResponseWriter http.ResponseWriter
+	index          int
+	abortIndex     int
+	group          HandleFuncGroup
 	// Mat multipart form memory size
 	// default 32M
 	MultipartMemory int64
@@ -197,7 +197,7 @@ func (c *Context) QueryValues(key string) Values {
 // but value for current context
 func (c *Context) Form() url.Values {
 	if c.formCache == nil {
-		c.ParseForm()
+		c.Request.ParseForm()
 		c.formCache = c.Request.PostForm
 	}
 	return c.formCache
@@ -227,7 +227,7 @@ func (c *Context) BindQuery(v interface{}) error {
 
 // BindForm bind PostForm to destination
 func (c *Context) BindForm(v interface{}) error {
-	if err := c.ParseForm(); err != nil {
+	if err := c.Request.ParseForm(); err != nil {
 		return err
 	}
 	return c.Bind(formBinder, v)
@@ -254,7 +254,7 @@ func (c *Context) BindXML(v interface{}) error {
 // SetStatus set response status code
 // call this method at last
 func (c *Context) SetStatus(code int) {
-	c.WriteHeader(code)
+	c.ResponseWriter.WriteHeader(code)
 }
 
 // SetHeader set response header
@@ -343,4 +343,10 @@ func (c *Context) AbortWithText(text string) {
 func (c *Context) IsWebsocket() bool {
 	return strings.Contains(strings.ToLower(c.Request.Header.Get("Connection")), "upgrade") &&
 		strings.EqualFold(c.Request.Header.Get("Upgrade"), "websocket")
+}
+
+// Write []byte into response writer
+func (c *Context) Write(data []byte) error {
+	_, err := c.ResponseWriter.Write(data)
+	return err
 }
