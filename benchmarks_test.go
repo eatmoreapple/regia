@@ -23,5 +23,6 @@ func runRequest(B *testing.B, r *Engine, method, path string) {
 func BenchmarkOneRoute(B *testing.B) {
 	router := New()
 	router.GET("/ping", func(c *Context) {})
+	router.init()
 	runRequest(B, router, "GET", "/ping")
 }

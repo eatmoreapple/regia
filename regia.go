@@ -138,9 +138,13 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	group, params := e.Router.Match(request)
 	if group != nil {
 		context.matched = true
-		group = append(e.Interceptors, group...)
+		if len(e.Interceptors) != 0 {
+			group = append(e.Interceptors, group...)
+		}
 	} else {
-		group = append(e.Interceptors, e.NotFoundHandle)
+		if len(e.Interceptors) != 0 {
+			group = append(e.Interceptors, e.NotFoundHandle)
+		}
 	}
 	context.init(request, writer, params, group)
 	context.start()

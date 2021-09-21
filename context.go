@@ -58,14 +58,14 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 // reset current Context
 func (c *Context) reset() {
 	c.index = 0
-	c.Request = nil
-	c.ResponseWriter = nil
-	c.Params = nil
-	c.group = nil
-	c.FileStorage = nil
-	c.abort = nil
-	c.MultipartMemory = defaultMultipartMemory
-	c.contextValue = nil
+	//c.Request = nil
+	//c.ResponseWriter = nil
+	//c.Params = nil
+	//c.group = nil
+	//c.FileStorage = nil
+	//c.abort = nil
+	//c.MultipartMemory = defaultMultipartMemory
+	//c.contextValue = nil
 	c.Parsers = nil
 	c.matched = false
 	c.Validator = nil
