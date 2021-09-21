@@ -123,8 +123,7 @@ func (e *Engine) init() {
 
 // Run Start Listen and serve
 func (e *Engine) Run(addr string) error {
-	e.init()
-	e.server = &http.Server{Addr: addr, Handler: e}
+	e.makeServer(addr)
 	return e.server.ListenAndServe()
 }
 
@@ -187,13 +186,17 @@ func stringToByte(s string) []byte {
 }
 
 // ListenAndServeTLS acts identically to Run
-func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string, handler http.Handler) error {
-	e.init()
-	e.server = &http.Server{Addr: addr, Handler: e}
+func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
+	e.makeServer(addr)
 	return e.server.ListenAndServeTLS(certFile, keyFile)
 }
 
 // Server is a getter for Engine
 func (e *Engine) Server() *http.Server {
 	return e.server
+}
+
+func (e *Engine) makeServer(addr string) {
+	e.init()
+	e.server = &http.Server{Addr: addr, Handler: e}
 }
