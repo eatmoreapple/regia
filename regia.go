@@ -123,6 +123,7 @@ func (e *Engine) init() {
 
 // Run Start Listen and serve
 func (e *Engine) Run(addr string) error {
+	e.init()
 	e.makeServer(addr)
 	return e.server.ListenAndServe()
 }
@@ -191,6 +192,7 @@ func stringToByte(s string) []byte {
 
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
+	e.init()
 	e.makeServer(addr)
 	return e.server.ListenAndServeTLS(certFile, keyFile)
 }
@@ -201,6 +203,18 @@ func (e *Engine) Server() *http.Server {
 }
 
 func (e *Engine) makeServer(addr string) {
-	e.init()
 	e.server = &http.Server{Addr: addr, Handler: e}
+}
+
+func (e *Engine) Clone() *Engine {
+	newEngine := New()
+	newEngine.methodsTree = e.methodsTree
+	copy(newEngine.Interceptors, e.Interceptors)
+	copy(newEngine.Starters, e.Starters)
+	newEngine.Warehouse = e.Warehouse
+	newEngine.MultipartMemory = e.MultipartMemory
+	newEngine.Abort = e.Abort
+	newEngine.FileStorage = e.FileStorage
+	newEngine.ContextValidator = e.ContextValidator
+	return newEngine
 }
