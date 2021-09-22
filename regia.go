@@ -206,15 +206,6 @@ func (e *Engine) makeServer(addr string) {
 	e.server = &http.Server{Addr: addr, Handler: e}
 }
 
-func (e *Engine) Clone() *Engine {
-	newEngine := New()
-	newEngine.methodsTree = e.methodsTree
-	copy(newEngine.Interceptors, e.Interceptors)
-	copy(newEngine.Starters, e.Starters)
-	newEngine.Warehouse = e.Warehouse
-	newEngine.MultipartMemory = e.MultipartMemory
-	newEngine.Abort = e.Abort
-	newEngine.FileStorage = e.FileStorage
-	newEngine.ContextValidator = e.ContextValidator
-	return newEngine
+func (e *Engine) CloneServer() *http.Server {
+	return &http.Server{Handler: e}
 }
