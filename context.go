@@ -6,6 +6,7 @@ package regia
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,8 +19,8 @@ const defaultMultipartMemory = 32 << 20
 type Context struct {
 	Request        *http.Request
 	ResponseWriter http.ResponseWriter
-	index          int
-	abortIndex     int
+	index          uint8
+	abortIndex     uint8
 	group          HandleFuncGroup
 	// Mat multipart form memory size
 	// default 32M
@@ -66,6 +67,7 @@ func (c *Context) reset() {
 		// clear and return to the syncMapPool
 		c.contextValue.Clear()
 		syncMapPool.Put(c.contextValue)
+		c.contextValue = nil
 	}
 }
 
@@ -94,7 +96,7 @@ func (c *Context) IsMatched() bool {
 // Next call handle
 func (c *Context) Next() {
 	c.index++
-	for c.index <= len(c.group) {
+	for c.index <= uint8(len(c.group)) {
 		handle := c.group[c.index-1]
 		handle(c)
 		c.index++
@@ -144,6 +146,9 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) (string, error
 // Data analysis request body to destination and validate
 // Call Context.AddParser to add more support
 func (c *Context) Data(v interface{}) error {
+	if c.Parsers == nil {
+		c.Parsers = c.Engine.ContextParser
+	}
 	if err := c.Parsers.Parse(c, v); err != nil {
 		return err
 	}
@@ -274,9 +279,14 @@ func (c *Context) XML(data interface{}) error {
 }
 
 // Text write string response
-func (c *Context) Text(text string) (int, error) {
+func (c *Context) Text(format string, data ...interface{}) (err error) {
 	writeContentType(c.ResponseWriter, textHtmlContentType)
-	return c.ResponseWriter.Write(stringToByte(text))
+	if len(data) > 0 {
+		_, err = fmt.Fprintf(c.ResponseWriter, format, data...)
+	} else {
+		_, err = c.ResponseWriter.Write(stringToByte(format))
+	}
+	return err
 }
 
 // Redirect Shortcut for http.Redirect
@@ -326,7 +336,7 @@ func (c *Context) AbortWithXML(data interface{}) {
 
 // AbortWithText write string response and exit
 func (c *Context) AbortWithText(text string) {
-	_, _ = c.Text(text)
+	_ = c.Text(text)
 	c.Abort()
 }
 

@@ -29,7 +29,7 @@ func (b BannerStarter) Start(engine *Engine) { fmt.Println(b.Banner) }
 type UrlInfoStarter struct{}
 
 func (u UrlInfoStarter) Start(engine *Engine) {
-	for method, nodes := range engine.GetMethodTree() {
+	for method, nodes := range engine.methodsTree {
 		m := formatColor(97, method)
 		for _, n := range nodes {
 			handleCount := formatColor(colorBlue, fmt.Sprintf("%d handlers", len(n.group)))

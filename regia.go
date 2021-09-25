@@ -55,7 +55,9 @@ type Engine struct {
 	// global Context ContextValidator
 	ContextValidator Validator
 
-	server *http.Server
+	// global ContextParser
+	ContextParser Parsers
+	server        *http.Server
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -123,14 +125,9 @@ func (e *Engine) init() {
 
 // Run Start Listen and serve
 func (e *Engine) Run(addr string) error {
-	e.init()
-	e.makeServer(addr)
+	e.SetUp()
+	e.server.Addr = addr
 	return e.server.ListenAndServe()
-}
-
-// GetMethodTree Getter for e.BluePrint.methodsTree
-func (e *Engine) GetMethodTree() map[string][]*handleNode {
-	return e.BluePrint.methodsTree
 }
 
 // ServeHTTP implement http.Handle
@@ -166,10 +163,10 @@ func New() *Engine {
 		Abort:            exit{},
 		FileStorage:      LocalFileStorage{},
 		ContextValidator: DefaultValidator{},
+		// Add default parser to make sure that Context could be worked
+		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
-	// Add default parser to make sure that Context could be worked
-	engine.Use(HandleWithParser(JsonParser{}, FormParser{}, MultipartFormParser{}))
 	return engine
 }
 
@@ -192,8 +189,8 @@ func stringToByte(s string) []byte {
 
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
-	e.init()
-	e.makeServer(addr)
+	e.SetUp()
+	e.server.Addr = addr
 	return e.server.ListenAndServeTLS(certFile, keyFile)
 }
 
@@ -202,10 +199,15 @@ func (e *Engine) Server() *http.Server {
 	return e.server
 }
 
-func (e *Engine) makeServer(addr string) {
-	e.server = &http.Server{Addr: addr, Handler: e}
+func (e *Engine) makeServer() {
+	e.server = e.CloneServer()
 }
 
 func (e *Engine) CloneServer() *http.Server {
 	return &http.Server{Handler: e}
+}
+
+func (e *Engine) SetUp() {
+	e.init()
+	e.makeServer()
 }
