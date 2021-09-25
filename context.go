@@ -335,8 +335,8 @@ func (c *Context) AbortWithXML(data interface{}) {
 }
 
 // AbortWithText write string response and exit
-func (c *Context) AbortWithText(text string) {
-	_ = c.Text(text)
+func (c *Context) AbortWithText(text string, data ...interface{}) {
+	_ = c.Text(text, data...)
 	c.Abort()
 }
 
