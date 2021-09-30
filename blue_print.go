@@ -112,14 +112,22 @@ func (b *BluePrint) BindMethod(path string, v interface{}, mappings ...map[strin
 }
 
 // BindByHandlerName register handler by handler name
+// 		type Handler struct{}
+// 		func(Handler)PostLogin(c *Context) {}
+//		engine.BindByHandlerName("/user/", Handler{})
 func (b *BluePrint) BindByHandlerName(path string, v interface{}) {
 	value := reflect.ValueOf(v)
 	t := reflect.TypeOf(v)
 	for i := 0; i < value.NumMethod(); i++ {
 		method := value.Method(i)
+		methodName := t.Method(i).Name
 		if m, ok := method.Interface().(func(ctx *Context)); ok {
-			name := path + getHandlerPathName(t.Method(i).Name)
-			b.Handle("*", name, m)
+			for k, v := range HttpRequestMethodMapping {
+				if strings.HasPrefix(methodName, k) {
+					pathName := strings.TrimLeft(methodName, k)
+					b.Handle(v, path+getHandlerPathName(pathName), m)
+				}
+			}
 		}
 	}
 }
