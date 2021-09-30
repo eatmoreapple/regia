@@ -32,8 +32,8 @@ const (
 
 const timeFormat = "2006-01-02 15:04:05"
 
-func formatColor(color int, text string) string {
-	return fmt.Sprintf(colorFormat, color, text)
+func formatColor(color int, v interface{}) string {
+	return fmt.Sprintf(colorFormat, color, fmt.Sprintf("%+v", v))
 }
 
 func regiaLog(start time.Time, context *Context) {
@@ -50,10 +50,10 @@ func regiaLog(start time.Time, context *Context) {
 }
 
 type Log interface {
-	Info(text string)
-	Debug(text string)
-	Warn(text string)
-	Error(text string)
+	Info(v interface{})
+	Debug(v interface{})
+	Warn(v interface{})
+	Error(v interface{})
 }
 
 // ConsoleLog implement Log
@@ -61,20 +61,20 @@ type ConsoleLog struct {
 	*log.Logger
 }
 
-func (c ConsoleLog) Info(text string) {
-	c.Println(formatColor(colorGreen, text))
+func (c ConsoleLog) Info(v interface{}) {
+	c.Println(formatColor(colorGreen, v))
 }
 
-func (c ConsoleLog) Debug(text string) {
-	c.Println(formatColor(colorMagenta, text))
+func (c ConsoleLog) Debug(v interface{}) {
+	c.Println(formatColor(colorMagenta, v))
 }
 
-func (c ConsoleLog) Warn(text string) {
-	c.Println(formatColor(colorYellow, text))
+func (c ConsoleLog) Warn(v interface{}) {
+	c.Println(formatColor(colorYellow, v))
 }
 
-func (c ConsoleLog) Error(text string) {
-	c.Println(formatColor(colorRed, text))
+func (c ConsoleLog) Error(v interface{}) {
+	c.Println(formatColor(colorRed, v))
 }
 
 var Logger Log = ConsoleLog{log.New(os.Stdout, "", 0)}
