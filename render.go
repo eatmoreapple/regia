@@ -16,26 +16,34 @@ type Render interface {
 }
 
 type JsonRender struct {
-	Marshaller Marshaller
+	Encoder Encoder
 }
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	return j.Marshaller.Encode(writer, v)
+	return j.Encoder.Encode(writer, v)
 }
 
 type XmlRender struct {
-	Marshaller Marshaller
+	Encoder Encoder
 }
 
 func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, textXmlContentType)
-	return j.Marshaller.Encode(writer, v)
+	return j.Encoder.Encode(writer, v)
+}
+
+type Encoder interface {
+	Encode(writer io.Writer, v interface{}) error
+}
+
+type Decoder interface {
+	Decode(reader io.Reader, v interface{}) error
 }
 
 type Marshaller interface {
-	Decode(reader io.Reader, v interface{}) error
-	Encode(writer io.Writer, v interface{}) error
+	Encoder
+	Decoder
 }
 
 type JsonMarshal struct{}
@@ -62,6 +70,6 @@ var (
 	XML  Marshaller = XmlMarshaller{}
 	JSON Marshaller = JsonMarshal{}
 
-	JSONRender = JsonRender{Marshaller: JSON}
-	XMLRender  = XmlRender{Marshaller: XML}
+	JSONRender = JsonRender{Encoder: JSON}
+	XMLRender  = XmlRender{Encoder: XML}
 )
