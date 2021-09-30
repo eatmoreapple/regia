@@ -7,6 +7,7 @@ package regia
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -31,6 +32,21 @@ type XmlRender struct {
 func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, textXmlContentType)
 	return j.Encoder.Encode(writer, v)
+}
+
+type StringRender struct {
+	format string
+	data   []interface{}
+}
+
+func (s StringRender) Render(writer http.ResponseWriter, data interface{}) (err error) {
+	writeContentType(writer, textHtmlContentType)
+	if len(s.data) > 0 {
+		_, err = fmt.Fprintf(writer, s.format, s.data...)
+	} else {
+		_, err = writer.Write(stringToByte(s.format))
+	}
+	return err
 }
 
 type Encoder interface {

@@ -6,7 +6,6 @@ package regia
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -280,13 +279,8 @@ func (c *Context) XML(data interface{}) error {
 
 // Text write string response
 func (c *Context) Text(format string, data ...interface{}) (err error) {
-	writeContentType(c.ResponseWriter, textHtmlContentType)
-	if len(data) > 0 {
-		_, err = fmt.Fprintf(c.ResponseWriter, format, data...)
-	} else {
-		_, err = c.ResponseWriter.Write(stringToByte(format))
-	}
-	return err
+	render := StringRender{format: format, data: data}
+	return c.Render(render, nil)
 }
 
 // Redirect Shortcut for http.Redirect
