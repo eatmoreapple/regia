@@ -6,12 +6,12 @@ import (
 )
 
 func TestConsoleLog(t *testing.T) {
-	Logger.Info("info")
-	Logger.Error(errors.New("error"))
-	Logger.Warn(struct {
+	Log.Info("info")
+	Log.Error(errors.New("error"))
+	Log.Warn(struct {
 		Name string
 	}{
 		Name: "warn",
 	})
-	Logger.Debug(0x666)
+	Log.Debug(0x666)
 }

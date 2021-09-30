@@ -49,32 +49,32 @@ func regiaLog(start time.Time, context *Context) {
 	fmt.Printf("%-23s %-32s %-20s %-28s %-28s %-40s %s\n", logTitle, startTimeStr, end, matched, method, path, addr)
 }
 
-type Log interface {
+type Logger interface {
 	Info(v interface{})
 	Debug(v interface{})
 	Warn(v interface{})
 	Error(v interface{})
 }
 
-// ConsoleLog implement Log
-type ConsoleLog struct {
+// ColorLogger implement Log
+type ColorLogger struct {
 	*log.Logger
 }
 
-func (c ConsoleLog) Info(v interface{}) {
+func (c ColorLogger) Info(v interface{}) {
 	c.Println(formatColor(colorGreen, v))
 }
 
-func (c ConsoleLog) Debug(v interface{}) {
+func (c ColorLogger) Debug(v interface{}) {
 	c.Println(formatColor(colorMagenta, v))
 }
 
-func (c ConsoleLog) Warn(v interface{}) {
+func (c ColorLogger) Warn(v interface{}) {
 	c.Println(formatColor(colorYellow, v))
 }
 
-func (c ConsoleLog) Error(v interface{}) {
+func (c ColorLogger) Error(v interface{}) {
 	c.Println(formatColor(colorRed, v))
 }
 
-var Logger Log = ConsoleLog{log.New(os.Stdout, "", 0)}
+var Log Logger = ColorLogger{log.New(os.Stdout, "", 0)}
