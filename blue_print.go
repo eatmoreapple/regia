@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"unicode"
 )
 
 type handleNode struct {
@@ -92,7 +93,7 @@ func (b *BluePrint) Include(prefix string, branch *BluePrint) {
 // Bind legal handleFunc with given mappings from struct
 func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]string) {
 	for _, mapping := range mappings {
-		cleanedMapping := b.getCleanedRequestMapping(mapping)
+		cleanedMapping := getCleanedRequestMapping(mapping)
 		value := reflect.ValueOf(v)
 		for handleName, methodName := range cleanedMapping {
 			if method := value.MethodByName(handleName); method.IsValid() {
@@ -110,7 +111,24 @@ func (b *BluePrint) BindMethod(path string, v interface{}, mappings ...map[strin
 	b.Bind(path, v, mappings...)
 }
 
-func (b *BluePrint) getCleanedRequestMapping(mapping map[string]string) map[string]string {
+// BindByHandlerName register handler by handler name
+func (b *BluePrint) BindByHandlerName(path string, v interface{}) {
+	value := reflect.ValueOf(v)
+	t := reflect.TypeOf(v)
+	for i := 0; i < value.NumMethod(); i++ {
+		method := value.Method(i)
+		if m, ok := method.Interface().(func(ctx *Context)); ok {
+			name := path + getHandlerPathName(t.Method(i).Name)
+			b.Handle("*", name, m)
+		}
+	}
+}
+
+func NewBluePrint() *BluePrint {
+	return &BluePrint{}
+}
+
+func getCleanedRequestMapping(mapping map[string]string) map[string]string {
 	cleanedMapping := make(map[string]string)
 	for handleName, requestMethod := range mapping {
 		requestMethodUpper := strings.ToUpper(requestMethod)
@@ -126,6 +144,20 @@ func (b *BluePrint) getCleanedRequestMapping(mapping map[string]string) map[stri
 	return cleanedMapping
 }
 
-func NewBluePrint() *BluePrint {
-	return &BluePrint{}
+func getHandlerPathName(name string) string {
+	var builder strings.Builder
+	for index, n := range name {
+		if index == 0 {
+			builder.WriteString(strings.ToLower(string(n)))
+			continue
+		}
+		if unicode.IsUpper(n) {
+			builder.WriteString("-")
+			builder.WriteString(strings.ToLower(string(n)))
+			continue
+		} else {
+			builder.WriteRune(n)
+		}
+	}
+	return builder.String()
 }
