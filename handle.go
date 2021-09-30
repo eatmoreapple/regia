@@ -5,6 +5,7 @@
 package regia
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -61,4 +62,17 @@ func LogInterceptor(context *Context) {
 	defer regiaLog(start, context)
 
 	context.Next()
+}
+
+func HandleWithExit(exit Exit) HandleFunc {
+	return func(context *Context) {
+		context.AbortWith(exit)
+	}
+}
+
+func Flush(exit Exit) error {
+	if exit == nil {
+		return errors.New("exit can not be nil")
+	}
+	panic(exit)
 }
