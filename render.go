@@ -7,6 +7,7 @@ package regia
 import (
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"net/http"
 )
 
@@ -14,44 +15,49 @@ type Render interface {
 	Render(writer http.ResponseWriter, data interface{}) error
 }
 
-type JsonRender struct{}
+type JsonRender struct {
+	Marshaller Marshaller
+}
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	data, err := JSON.Marshal(v)
-	if err != nil {
-		return err
-	}
-	_, err = writer.Write(data)
-	return err
+	return j.Marshaller.Decode(writer, v)
 }
 
-type XmlRender struct{}
+type XmlRender struct {
+	Marshaller Marshaller
+}
 
 func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, textXmlContentType)
-	data, err := xml.Marshal(v)
-	if err != nil {
-		return err
-	}
-	_, err = writer.Write(data)
-	return err
+	return j.Marshaller.Decode(writer, v)
 }
 
-var (
-	jsonRender = JsonRender{}
-	xmlRender  = XmlRender{}
-)
-
 type Marshaller interface {
-	Unmarshal(data []byte, v interface{}) error
-	Marshal(v interface{}) ([]byte, error)
+	Encode(data []byte, v interface{}) error
+	Decode(writer io.Writer, v interface{}) error
 }
 
 type JsonMarshal struct{}
 
-func (JsonMarshal) Unmarshal(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
+func (JsonMarshal) Encode(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
 
-func (JsonMarshal) Marshal(v interface{}) ([]byte, error) { return json.Marshal(v) }
+func (JsonMarshal) Decode(writer io.Writer, v interface{}) error {
+	return json.NewEncoder(writer).Encode(v)
+}
 
-var JSON Marshaller = JsonMarshal{}
+type XmlMarshaller struct{}
+
+func (x XmlMarshaller) Encode(data []byte, v interface{}) error { return xml.Unmarshal(data, v) }
+
+func (x XmlMarshaller) Decode(writer io.Writer, v interface{}) error {
+	return xml.NewEncoder(writer).Encode(v)
+}
+
+var (
+	XML  Marshaller = XmlMarshaller{}
+	JSON Marshaller = JsonMarshal{}
+
+	JSONRender = JsonRender{Marshaller: JSON}
+	XMLRender  = XmlRender{Marshaller: XML}
+)

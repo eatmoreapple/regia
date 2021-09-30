@@ -270,12 +270,12 @@ func (c *Context) Render(render Render, data interface{}) error {
 
 // JSON write json response
 func (c *Context) JSON(data interface{}) error {
-	return c.Render(jsonRender, data)
+	return c.Render(JSONRender, data)
 }
 
 // XML write xml response
 func (c *Context) XML(data interface{}) error {
-	return c.Render(xmlRender, data)
+	return c.Render(XMLRender, data)
 }
 
 // Text write string response
