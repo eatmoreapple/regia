@@ -21,7 +21,7 @@ type JsonRender struct {
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	return j.Marshaller.Decode(writer, v)
+	return j.Marshaller.Encode(writer, v)
 }
 
 type XmlRender struct {
@@ -30,27 +30,31 @@ type XmlRender struct {
 
 func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, textXmlContentType)
-	return j.Marshaller.Decode(writer, v)
+	return j.Marshaller.Encode(writer, v)
 }
 
 type Marshaller interface {
-	Encode(data []byte, v interface{}) error
-	Decode(writer io.Writer, v interface{}) error
+	Decode(reader io.Reader, v interface{}) error
+	Encode(writer io.Writer, v interface{}) error
 }
 
 type JsonMarshal struct{}
 
-func (JsonMarshal) Encode(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
+func (JsonMarshal) Decode(reader io.Reader, v interface{}) error {
+	return json.NewDecoder(reader).Decode(v)
+}
 
-func (JsonMarshal) Decode(writer io.Writer, v interface{}) error {
+func (JsonMarshal) Encode(writer io.Writer, v interface{}) error {
 	return json.NewEncoder(writer).Encode(v)
 }
 
 type XmlMarshaller struct{}
 
-func (x XmlMarshaller) Encode(data []byte, v interface{}) error { return xml.Unmarshal(data, v) }
+func (x XmlMarshaller) Decode(reader io.Reader, v interface{}) error {
+	return xml.NewDecoder(reader).Decode(v)
+}
 
-func (x XmlMarshaller) Decode(writer io.Writer, v interface{}) error {
+func (x XmlMarshaller) Encode(writer io.Writer, v interface{}) error {
 	return xml.NewEncoder(writer).Encode(v)
 }
 
