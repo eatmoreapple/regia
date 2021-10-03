@@ -5,10 +5,8 @@
 package regia
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"io"
+	"github.com/eatmoreapple/regia/internal"
 	"net/http"
 )
 
@@ -17,21 +15,21 @@ type Render interface {
 }
 
 type JsonRender struct {
-	Encoder Encoder
+	Serializer internal.Serializer
 }
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, jsonContentType)
-	return j.Encoder.Encode(writer, v)
+	return j.Serializer.Encode(writer, v)
 }
 
 type XmlRender struct {
-	Encoder Encoder
+	Serializer internal.Serializer
 }
 
 func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
 	writeContentType(writer, textXmlContentType)
-	return j.Encoder.Encode(writer, v)
+	return j.Serializer.Encode(writer, v)
 }
 
 type StringRender struct {
@@ -39,7 +37,7 @@ type StringRender struct {
 	data   []interface{}
 }
 
-func (s StringRender) Render(writer http.ResponseWriter, data interface{}) (err error) {
+func (s StringRender) Render(writer http.ResponseWriter, v interface{}) (err error) {
 	writeContentType(writer, textHtmlContentType)
 	if len(s.data) > 0 {
 		_, err = fmt.Fprintf(writer, s.format, s.data...)
@@ -48,44 +46,3 @@ func (s StringRender) Render(writer http.ResponseWriter, data interface{}) (err 
 	}
 	return err
 }
-
-type Encoder interface {
-	Encode(writer io.Writer, v interface{}) error
-}
-
-type Decoder interface {
-	Decode(reader io.Reader, v interface{}) error
-}
-
-type Marshaller interface {
-	Encoder
-	Decoder
-}
-
-type JsonMarshal struct{}
-
-func (JsonMarshal) Decode(reader io.Reader, v interface{}) error {
-	return json.NewDecoder(reader).Decode(v)
-}
-
-func (JsonMarshal) Encode(writer io.Writer, v interface{}) error {
-	return json.NewEncoder(writer).Encode(v)
-}
-
-type XmlMarshaller struct{}
-
-func (x XmlMarshaller) Decode(reader io.Reader, v interface{}) error {
-	return xml.NewDecoder(reader).Decode(v)
-}
-
-func (x XmlMarshaller) Encode(writer io.Writer, v interface{}) error {
-	return xml.NewEncoder(writer).Encode(v)
-}
-
-var (
-	XML  Marshaller = XmlMarshaller{}
-	JSON Marshaller = JsonMarshal{}
-
-	JSONRender = JsonRender{Encoder: JSON}
-	XMLRender  = XmlRender{Encoder: XML}
-)

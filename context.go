@@ -6,6 +6,8 @@ package regia
 
 import (
 	"errors"
+	"github.com/eatmoreapple/regia/internal"
+	"github.com/eatmoreapple/regia/validators"
 	"io"
 	"net/http"
 	"net/url"
@@ -29,7 +31,7 @@ type Context struct {
 	Engine       *Engine
 	FileStorage  FileStorage
 	Parsers      Parsers
-	Validator    Validator
+	Validator    validators.Validator
 	Params       Params
 	abort        Exit
 	// if url matched
@@ -217,7 +219,8 @@ func (c *Context) Bind(binder Binder, v interface{}) error {
 
 // BindQuery bind Query to destination
 func (c *Context) BindQuery(v interface{}) error {
-	return c.Bind(queryBinder, v)
+	binder := QueryBinder{}
+	return c.Bind(binder, v)
 }
 
 // BindForm bind PostForm to destination
@@ -225,7 +228,8 @@ func (c *Context) BindForm(v interface{}) error {
 	if err := c.Request.ParseForm(); err != nil {
 		return err
 	}
-	return c.Bind(formBinder, v)
+	binder := QueryBinder{}
+	return c.Bind(binder, v)
 }
 
 // BindMultipartForm bind MultipartForm to destination
@@ -233,17 +237,20 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 	if err := c.Request.ParseMultipartForm(c.MultipartMemory); err != nil {
 		return err
 	}
-	return c.Bind(multipartFormBinder, v)
+	binder := MultipartFormBodyBinder{}
+	return c.Bind(binder, v)
 }
 
 // BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
-	return c.Bind(jsonBinder, v)
+	binder := JsonBodyBinder{}
+	return c.Bind(binder, v)
 }
 
 // BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
-	return c.Bind(xmlBinder, v)
+	binder := XmlBodyBinder{}
+	return c.Bind(binder, v)
 }
 
 // SetStatus set response status code
@@ -269,12 +276,14 @@ func (c *Context) Render(render Render, data interface{}) error {
 
 // JSON write json response
 func (c *Context) JSON(data interface{}) error {
-	return c.Render(JSONRender, data)
+	render := JsonRender{Serializer: internal.JsonSerializer{}}
+	return c.Render(render, data)
 }
 
 // XML write xml response
 func (c *Context) XML(data interface{}) error {
-	return c.Render(XMLRender, data)
+	render := XmlRender{Serializer: internal.XmlSerializer{}}
+	return c.Render(render, data)
 }
 
 // Text write string response

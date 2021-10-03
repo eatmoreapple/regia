@@ -5,6 +5,7 @@
 package regia
 
 import (
+	"github.com/eatmoreapple/regia/validators"
 	"net/http"
 	"reflect"
 	"strings"
@@ -53,7 +54,7 @@ type Engine struct {
 	FileStorage FileStorage
 
 	// global Context ContextValidator
-	ContextValidator Validator
+	ContextValidator validators.Validator
 
 	// global ContextParser
 	ContextParser Parsers
@@ -162,7 +163,7 @@ func New() *Engine {
 		MultipartMemory:  defaultMultipartMemory,
 		Abort:            exit{},
 		FileStorage:      LocalFileStorage{},
-		ContextValidator: DefaultValidator{},
+		ContextValidator: validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
 	}

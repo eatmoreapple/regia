@@ -4,9 +4,10 @@
 
 package regia
 
-import "fmt"
-
-var title = formatColor(96, "[REGIA URL INFO]")
+import (
+	"fmt"
+	"github.com/eatmoreapple/regia/internal"
+)
 
 var Banner = `
 ██████╗ ███████╗ ██████╗ ██╗ █████╗ 
@@ -16,6 +17,8 @@ var Banner = `
 ██║  ██║███████╗╚██████╔╝██║██║  ██║
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝
 `
+
+const urlInfo = "[URL INFO]"
 
 // Starter will be called while engine is running
 type Starter interface {
@@ -30,11 +33,11 @@ type UrlInfoStarter struct{}
 
 func (u UrlInfoStarter) Start(engine *Engine) {
 	for method, nodes := range engine.methodsTree {
-		m := formatColor(97, method)
+		m := internal.FormatColor(97, method)
 		for _, n := range nodes {
-			handleCount := formatColor(colorBlue, fmt.Sprintf("%d handlers", len(n.group)))
-			path := formatColor(colorYellow, n.path)
-			fmt.Printf("%-15s   %-18s   %-18s   %s\n", title, m, handleCount, path)
+			handleCount := internal.BlueString(fmt.Sprintf("%d handlers", len(n.group)))
+			path := internal.YellowString(n.path)
+			fmt.Printf("%-15s   %-18s   %-18s   %s\n", urlInfo, m, handleCount, path)
 		}
 	}
 }
