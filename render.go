@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// Render define Render to write response data
 type Render interface {
 	Render(writer http.ResponseWriter, data interface{}) error
 }
@@ -45,4 +46,14 @@ func (s StringRender) Render(writer http.ResponseWriter, v interface{}) (err err
 		_, err = writer.Write(stringToByte(s.format))
 	}
 	return err
+}
+
+// SetJsonSerializer is a setter for JSON Serializer
+func SetJsonSerializer(serializer internal.Serializer) {
+	internal.JSON = serializer
+}
+
+// SetXmlSerializer is a setter for XML Serializer
+func SetXmlSerializer(serializer internal.Serializer) {
+	internal.XML = serializer
 }
