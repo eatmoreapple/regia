@@ -17,8 +17,6 @@ type Logger interface {
 	Error(v interface{})
 }
 
-
-
 func Info(v interface{}) {
 	DefaultLogger.Info(v)
 }
