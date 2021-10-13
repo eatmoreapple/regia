@@ -70,6 +70,12 @@ func (b *BluePrint) ANY(path string, group ...HandleFunc) {
 	}
 }
 
+// RAW register http.HandlerFunc with all method
+func (b *BluePrint) RAW(path string, handlers ...http.HandlerFunc) {
+	h := RawHandlerFuncGroup(handlers...)
+	b.ANY(path, h...)
+}
+
 // Handle register HandleFunc with given method and path
 func (b *BluePrint) Handle(method, path string, group ...HandleFunc) {
 	group = append(b.middleware, group...)

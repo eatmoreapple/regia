@@ -88,3 +88,16 @@ func LogInterceptor(context *Context) {
 	}()
 	context.Next()
 }
+
+func RawHandlerFunc(handler http.HandlerFunc) HandleFunc {
+	return func(context *Context) { handler(context.ResponseWriter, context.Request) }
+}
+
+func RawHandlerFuncGroup(handlers ...http.HandlerFunc) HandleFuncGroup {
+	group := make(HandleFuncGroup, len(handlers))
+	for index, handler := range handlers {
+		h := RawHandlerFunc(handler)
+		group[index] = h
+	}
+	return group
+}
