@@ -39,12 +39,12 @@ type FileStorage interface {
 var _ FileStorage = LocalFileStorage{}
 
 type LocalFileStorage struct {
-	mediaRoot string
+	MediaRoot string
 }
 
 // SetMediaRouter Set file base save path for LocalFileStorage
 func (l *LocalFileStorage) SetMediaRouter(mediaRoot string) {
-	l.mediaRoot = mediaRoot
+	l.MediaRoot = mediaRoot
 }
 
 // Save implement FileStorage
@@ -57,11 +57,11 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error)
 	defer src.Close()
 
 	// check path if exists
-	if len(l.mediaRoot) > 0 {
-		_, err = os.Stat(l.mediaRoot)
+	if len(l.MediaRoot) > 0 {
+		_, err = os.Stat(l.MediaRoot)
 		if err != nil {
 			if os.IsNotExist(err) {
-				if err = os.Mkdir(l.mediaRoot, 0666); err != nil {
+				if err = os.Mkdir(l.MediaRoot, 0666); err != nil {
 					return "", err
 				}
 			} else {
@@ -89,7 +89,7 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error)
 // to the filename
 func (l LocalFileStorage) getAlternativeName(filename string) (string, error) {
 	for {
-		dst := path.Join(l.mediaRoot, filename)
+		dst := path.Join(l.MediaRoot, filename)
 		exist, err := fileExists(dst)
 		if err != nil {
 			return "", err
