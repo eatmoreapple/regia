@@ -343,6 +343,12 @@ func (c *Context) AbortWithText(text string, data ...interface{}) {
 	c.Abort()
 }
 
+// AbortWithStatus set response status and exit
+func (c *Context) AbortWithStatus(code int) {
+	c.SetStatus(code)
+	c.Abort()
+}
+
 // IsWebsocket returns true if the request headers indicate that a websocket
 func (c *Context) IsWebsocket() bool {
 	return strings.Contains(strings.ToLower(c.Request.Header.Get("Connection")), "upgrade") &&
