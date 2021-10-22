@@ -13,6 +13,7 @@ const (
 	jsonContentType     = "application/json;charset=utf-8"
 	textHtmlContentType = "text/html;charset=utf-8"
 	textXmlContentType  = "text/xml;charset=utf-8"
+	octetStream         = "application/octet-stream"
 )
 
 const (

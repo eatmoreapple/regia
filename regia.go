@@ -6,6 +6,7 @@ package regia
 
 import (
 	"github.com/eatmoreapple/regia/validators"
+	"mime"
 	"net/http"
 	"reflect"
 	"strings"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	FilePathParam = "FilePathParam"
+	FilePathParam = "static"
 	wildFilepath  = "*" + FilePathParam
 )
 
@@ -88,7 +89,16 @@ func (e *Engine) Static(url, dir string, group ...HandleFunc) {
 	}
 	server := http.FileServer(http.Dir(dir))
 	handle := func(context *Context) {
-		context.Request.URL.Path = context.Params.Get(FilePathParam).Text()
+		path := context.Params.Get(FilePathParam).Text()
+		context.Request.URL.Path = path
+		ext := strings.Split(path, ".")
+		if length := len(ext); length > 0 {
+			cnt := mime.TypeByExtension("." + ext[length-1])
+			if len(cnt) == 0 {
+				cnt = octetStream
+			}
+			context.SetHeader(contentType, cnt)
+		}
 		server.ServeHTTP(context.ResponseWriter, context.Request)
 	}
 	group = append(group, handle)
@@ -126,9 +136,7 @@ func (e *Engine) init() {
 
 // Run Start Listen and serve
 func (e *Engine) Run(addr string) error {
-	e.SetUp()
-	e.server.Addr = addr
-	return e.server.ListenAndServe()
+	return e.ListenAndServe(addr)
 }
 
 // ServeHTTP implement http.Handle
@@ -193,6 +201,12 @@ func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
 	e.SetUp()
 	e.server.Addr = addr
 	return e.server.ListenAndServeTLS(certFile, keyFile)
+}
+
+func (e *Engine) ListenAndServe(addr string) error {
+	e.SetUp()
+	e.server.Addr = addr
+	return e.server.ListenAndServe()
 }
 
 // Server is a getter for Engine
