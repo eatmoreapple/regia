@@ -355,6 +355,11 @@ func (c *Context) IsWebsocket() bool {
 		strings.EqualFold(c.Request.Header.Get("Upgrade"), "websocket")
 }
 
+// IsAjax check current if is an ajax request
+func (c *Context) IsAjax() bool {
+	return strings.EqualFold(c.Request.Header.Get("X-Requested-With"), "XMLHttpRequest")
+}
+
 // Write []byte into response writer
 func (c *Context) Write(data []byte) error {
 	_, err := c.ResponseWriter.Write(data)
