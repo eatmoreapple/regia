@@ -141,7 +141,7 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) (string, error
 	if err = file.Close(); err != nil {
 		return "", err
 	}
-	return c.FileStorage.Save(fileHeader)
+	return fs.Save(fileHeader)
 }
 
 // Data analysis request body to destination and validate
