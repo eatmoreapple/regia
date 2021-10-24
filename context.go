@@ -5,6 +5,7 @@
 package regia
 
 import (
+	"context"
 	"errors"
 	"github.com/eatmoreapple/regia/internal"
 	"github.com/eatmoreapple/regia/validators"
@@ -364,4 +365,33 @@ func (c *Context) IsAjax() bool {
 func (c *Context) Write(data []byte) error {
 	_, err := c.ResponseWriter.Write(data)
 	return err
+}
+
+type contextKey struct{}
+
+type contextExistKey struct{}
+
+// ContextKey is the request context key under which Context are stored.
+var (
+	ContextKey   = contextKey{}
+	contextExist = contextExistKey{}
+)
+
+// SetContextIntoRequest set Context into request context
+func SetContextIntoRequest(ctx *Context) {
+	c := ctx.Request.Context()
+	// if is the first time
+	// ensure that called only once
+	if c.Value(contextExist) == nil {
+		c = context.WithValue(c, contextExist, contextExist)
+		ctx.Request = ctx.Request.WithContext(c)
+		c = context.WithValue(c, ContextKey, ctx)
+		ctx.Request = ctx.Request.WithContext(c)
+	}
+}
+
+// GetCurrentContext get current Context from the request
+func GetCurrentContext(req *http.Request) *Context {
+	p, _ := req.Context().Value(ContextKey).(*Context)
+	return p
 }

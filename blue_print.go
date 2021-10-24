@@ -71,9 +71,9 @@ func (b *BluePrint) ANY(path string, group ...HandleFunc) {
 }
 
 // RAW register http.HandlerFunc with all method
-func (b *BluePrint) RAW(path string, handlers ...http.HandlerFunc) {
+func (b *BluePrint) RAW(method, path string, handlers ...http.HandlerFunc) {
 	h := RawHandlerFuncGroup(handlers...)
-	b.ANY(path, h...)
+	b.Handle(method, path, h...)
 }
 
 // Handle register HandleFunc with given method and path
@@ -84,7 +84,14 @@ func (b *BluePrint) Handle(method, path string, group ...HandleFunc) {
 	if b.methodsTree == nil {
 		b.methodsTree = make(map[string][]*handleNode)
 	}
-	b.methodsTree[method] = append(b.methodsTree[method], n)
+	methods := []string{method}
+	if method == ALLMethods {
+		methods = httpMethods[:]
+	}
+	for _, m := range methods {
+		m = strings.ToUpper(m)
+		b.methodsTree[m] = append(b.methodsTree[m], n)
+	}
 }
 
 // Include can add another BluePrint

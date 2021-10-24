@@ -24,7 +24,8 @@ const (
 	MethodDelete  = "Delete"
 	MethodHead    = "Head"
 	MethodOptions = "Options"
-	MethodTrace   = "Trace "
+	MethodTrace   = "Trace"
+	ALLMethods    = "*"
 )
 
 var httpMethods = [...]string{

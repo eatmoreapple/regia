@@ -90,7 +90,10 @@ func LogInterceptor(context *Context) {
 }
 
 func RawHandlerFunc(handler http.HandlerFunc) HandleFunc {
-	return func(context *Context) { handler(context.ResponseWriter, context.Request) }
+	return func(c *Context) {
+		SetContextIntoRequest(c)
+		handler(c.ResponseWriter, c.Request)
+	}
 }
 
 func RawHandlerFuncGroup(handlers ...http.HandlerFunc) HandleFuncGroup {
