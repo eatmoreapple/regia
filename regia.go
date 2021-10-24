@@ -8,6 +8,7 @@ import (
 	"github.com/eatmoreapple/regia/validators"
 	"mime"
 	"net/http"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"sync"
@@ -91,14 +92,12 @@ func (e *Engine) Static(url, dir string, group ...HandleFunc) {
 	handle := func(context *Context) {
 		path := context.Params.Get(FilePathParam).Text()
 		context.Request.URL.Path = path
-		ext := strings.Split(path, ".")
-		if length := len(ext); length > 0 {
-			cnt := mime.TypeByExtension("." + ext[length-1])
-			if len(cnt) == 0 {
-				cnt = octetStream
-			}
-			context.SetHeader(contentType, cnt)
+		ext := filepath.Ext(path)
+		cnt := mime.TypeByExtension(ext)
+		if len(cnt) == 0 {
+			cnt = octetStream
 		}
+		context.SetHeader(contentType, cnt)
 		server.ServeHTTP(context.ResponseWriter, context.Request)
 	}
 	group = append(group, handle)
