@@ -384,7 +384,6 @@ func SetContextIntoRequest(ctx *Context) {
 	// ensure that called only once
 	if c.Value(contextExist) == nil {
 		c = context.WithValue(c, contextExist, contextExist)
-		ctx.Request = ctx.Request.WithContext(c)
 		c = context.WithValue(c, ContextKey, ctx)
 		ctx.Request = ctx.Request.WithContext(c)
 	}
