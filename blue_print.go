@@ -5,7 +5,10 @@
 package regia
 
 import (
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"unicode"
@@ -143,6 +146,41 @@ func (b *BluePrint) BindByHandlerName(path string, v interface{}) {
 			}
 		}
 	}
+}
+
+// Static Serve static files
+//        BluePrint.Static("/static/", "./static")
+func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
+	if strings.Contains(url, "*") {
+		panic("`url` should not have wildcards")
+	}
+	server := http.FileServer(http.Dir(dir))
+	handle := func(context *Context) {
+		path := context.Params.Get(FilePathParam).Text()
+		context.Request.URL.Path = path
+		p := filepath.Join(dir, path)
+		if _, err := os.Stat(p); err != nil {
+			context.matched = false
+			context.Engine.NotFoundHandle(context)
+			context.AbortWith(exit{})
+            return
+		}
+		ext := filepath.Ext(path)
+		cnt := mime.TypeByExtension(ext)
+		if len(cnt) == 0 {
+			cnt = octetStream
+		}
+		context.SetHeader(contentType, cnt)
+		server.ServeHTTP(context.ResponseWriter, context.Request)
+	}
+	group = append(group, handle)
+	if !strings.HasSuffix(url, FilePathParam) {
+		if !strings.HasSuffix(url, "/") {
+			url += "/"
+		}
+	}
+	url += wildFilepath
+	b.Handle(http.MethodGet, url, group...)
 }
 
 func NewBluePrint() *BluePrint {

@@ -6,11 +6,8 @@ package regia
 
 import (
 	"github.com/eatmoreapple/regia/validators"
-	"mime"
 	"net/http"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"sync"
 	"unsafe"
 )
@@ -81,33 +78,6 @@ func (e *Engine) Start(*Engine) {
 // SetNotFoundHandle Setter for Engine.NotFoundHandle
 func (e *Engine) SetNotFoundHandle(handle HandleFunc) {
 	e.NotFoundHandle = handle
-}
-
-// Static Serve static files
-func (e *Engine) Static(url, dir string, group ...HandleFunc) {
-	if strings.Contains(url, "*") {
-		panic("`url` should not have wildcards")
-	}
-	server := http.FileServer(http.Dir(dir))
-	handle := func(context *Context) {
-		path := context.Params.Get(FilePathParam).Text()
-		context.Request.URL.Path = path
-		ext := filepath.Ext(path)
-		cnt := mime.TypeByExtension(ext)
-		if len(cnt) == 0 {
-			cnt = octetStream
-		}
-		context.SetHeader(contentType, cnt)
-		server.ServeHTTP(context.ResponseWriter, context.Request)
-	}
-	group = append(group, handle)
-	if !strings.HasSuffix(url, FilePathParam) {
-		if !strings.HasSuffix(url, "/") {
-			url += "/"
-		}
-		url += wildFilepath
-	}
-	e.Handle(http.MethodGet, url, group...)
 }
 
 // AddInterceptors Add interceptor to Engine
