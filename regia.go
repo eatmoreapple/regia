@@ -160,8 +160,8 @@ func Default() *Engine {
 	return engine
 }
 
-// Map is a shortcut fot map[string]interface{}
-type Map map[string]interface{}
+// Map is a shortcut fot map[interface{}]interface{}
+type Map map[interface{}]interface{}
 
 // unsafe string to byte
 // without memory copy
