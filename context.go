@@ -85,7 +85,7 @@ func (c *Context) recover() {
 		if e, ok := rec.(Exit); ok {
 			e.Exit(c)
 		} else {
-			panic(rec)
+			c.Engine.InternalServerErrorHandle(c, rec)
 		}
 	}
 }

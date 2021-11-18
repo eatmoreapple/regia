@@ -29,6 +29,9 @@ type Engine struct {
 	// NotFoundHandle replies to the request with an HTTP 404 not found error.
 	NotFoundHandle func(context *Context)
 
+	// InternalServerErrorHandle replies to the request with an HTTP 500 internal server error.
+	InternalServerErrorHandle func(context *Context, rec interface{})
+
 	// All requests will be intercepted by Interceptors
 	// whatever route matched or not
 	Interceptors HandleFuncGroup
@@ -133,14 +136,15 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 // New Constructor for Engine
 func New() *Engine {
 	engine := &Engine{
-		Router:           make(HttpRouter),
-		BluePrint:        NewBluePrint(),
-		NotFoundHandle:   HandleNotFound,
-		Warehouse:        new(SyncMap),
-		MultipartMemory:  defaultMultipartMemory,
-		Abort:            exit{},
-		FileStorage:      LocalFileStorage{},
-		ContextValidator: validators.DefaultValidator{},
+		Router:                    make(HttpRouter),
+		BluePrint:                 NewBluePrint(),
+		NotFoundHandle:            HandleNotFound,
+		InternalServerErrorHandle: HandleInternalServerError,
+		Warehouse:                 new(SyncMap),
+		MultipartMemory:           defaultMultipartMemory,
+		Abort:                     exit{},
+		FileStorage:               LocalFileStorage{},
+		ContextValidator:          validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
 	}

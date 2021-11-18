@@ -11,6 +11,7 @@ import (
 	"github.com/eatmoreapple/regia/validators"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -56,6 +57,19 @@ func HandleOptions(allowMethods ...string) HandleFunc {
 }
 
 func HandleNotFound(context *Context) { http.NotFound(context.ResponseWriter, context.Request) }
+
+func HandleInternalServerError(context *Context, ret interface{}) {
+	context.SetStatus(http.StatusInternalServerError)
+	_debug, exist := context.Engine.Warehouse.Get("DEBUG")
+	if exist {
+		isDebug, ok := _debug.(bool)
+		if ok && isDebug {
+			context.Write(debug.Stack())
+			return
+		}
+	}
+	context.String(http.StatusText(http.StatusInternalServerError))
+}
 
 func HandleWithExit(exit Exit) HandleFunc {
 	return func(context *Context) {
