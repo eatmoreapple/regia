@@ -288,7 +288,14 @@ func (c *Context) XML(data interface{}) error {
 }
 
 // Text write string response
+// Deprecated
+// Use c.String instead
 func (c *Context) Text(format string, data ...interface{}) (err error) {
+	return c.String(format, data...)
+}
+
+// String write string response
+func (c *Context) String(format string, data ...interface{}) (err error) {
 	render := StringRender{format: format, data: data}
 	return c.Render(render, nil)
 }
