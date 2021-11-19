@@ -28,17 +28,20 @@ import "github.com/eatmoreapple/regia"
 
 func main() {
 	engine := regia.Default()
+	
 	engine.GET("/", func(context *regia.Context) {
-		context.JSON(regia.Map{"hello": "world"})
+		context.JSON(map[string]interface{}{"hello": "world"})
 	})
+	
 	engine.POST("/", func(context *regia.Context) {
 		var form struct {
-			Name    string                `form:"name"`
+			Name    string                `form:"name" validate:"required(m=name is required)"`
+			Age     int                   `form:"age" validate:"gt(m=adult required,v=18)"`
 			Hobbies []string              `form:"hobbies"`
 			Avatar  *multipart.FileHeader `file:"avatar"`
 		}
 		// Parse the form.
-		if err := context.BindMultipartForm(&form); err != nil {
+		if err := context.Data(&form); err != nil {
 			context.JSON(regia.Map{"err": err.Error()})
 			return
 		}
@@ -48,8 +51,9 @@ func main() {
 			context.JSON(regia.Map{"err": err.Error()})
 			return
 		}
-		context.JSON(regia.Map{"name": form.Name, "hobbyies": form.Hobbies, "avatar": path})
+		context.JSON(regia.Map{"name": form.Name, "hobbies": form.Hobbies, "age": form.Age, "avatar": path})
 	})
+	
 	engine.Run(":8000")
 }
 ```
