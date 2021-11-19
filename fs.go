@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sync"
 )
 
 // GetFileContentType Get File contentType
@@ -29,10 +30,11 @@ type FileStorage interface {
 	Save(fileHeader *multipart.FileHeader) (string, error)
 }
 
-var _ FileStorage = LocalFileStorage{}
+var _ FileStorage = &LocalFileStorage{}
 
 type LocalFileStorage struct {
 	MediaRoot string
+	lock      sync.RWMutex
 }
 
 // SetMediaRouter Set file base save path for LocalFileStorage
@@ -42,7 +44,7 @@ func (l *LocalFileStorage) SetMediaRouter(mediaRoot string) {
 
 // Save implement FileStorage
 // Uploads the form file to local
-func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error) {
+func (l *LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error) {
 	src, err := fileHeader.Open()
 	if err != nil {
 		return "", err
@@ -67,6 +69,8 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error)
 	if err != nil {
 		return "", err
 	}
+	l.lock.Lock()
+	defer l.lock.Unlock()
 	out, err := os.Create(dst)
 	if err != nil {
 		return "", err
@@ -80,7 +84,9 @@ func (l LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error)
 // Return an alternative filename, by adding an underscore and a random 7
 // character alphanumeric string (before the file extension, if one exists
 // to the filename
-func (l LocalFileStorage) getAlternativeName(filename string) (string, error) {
+func (l *LocalFileStorage) getAlternativeName(filename string) (string, error) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
 	for {
 		dst := path.Join(l.MediaRoot, filename)
 		exist, err := fileExists(dst)

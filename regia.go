@@ -143,7 +143,7 @@ func New() *Engine {
 		Warehouse:                 new(SyncMap),
 		MultipartMemory:           defaultMultipartMemory,
 		Abort:                     exit{},
-		FileStorage:               LocalFileStorage{},
+		FileStorage:               &LocalFileStorage{},
 		ContextValidator:          validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
