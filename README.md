@@ -31,6 +31,25 @@ func main() {
 	engine.GET("/", func(context *regia.Context) {
 		context.JSON(regia.Map{"hello": "world"})
 	})
+	engine.POST("/", func(context *regia.Context) {
+		var form struct {
+			Name    string                `form:"name"`
+			Hobbies []string              `form:"hobbies"`
+			Avatar  *multipart.FileHeader `file:"avatar"`
+		}
+		// Parse the form.
+		if err := context.BindMultipartForm(&form); err != nil {
+			context.JSON(regia.Map{"err": err.Error()})
+			return
+		}
+		// save upload file
+		path, err := context.FileStorage.Save(form.Avatar)
+		if err != nil {
+			context.JSON(regia.Map{"err": err.Error()})
+			return
+		}
+		context.JSON(regia.Map{"name": form.Name, "hobbyies": form.Hobbies, "avatar": path})
+	})
 	engine.Run(":8000")
 }
 ```
@@ -38,6 +57,13 @@ func main() {
 ```shell
 $ go run main.go
 # open your brower and visit `localhost:8000/`
+```
+
+
+
+#### Bind Form Data
+
+```go
 ```
 
 
