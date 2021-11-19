@@ -6,18 +6,11 @@ package regia
 
 import (
 	"io"
-	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
-	"strings"
-	"time"
 )
-
-const randomStringChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-var maxRandomStringCharsLength = len(randomStringChars)
 
 // GetFileContentType Get File contentType
 // os.File impl multipart.File
@@ -111,18 +104,4 @@ func fileExists(filePath string) (bool, error) {
 		return false, nil
 	}
 	return false, err
-}
-
-// Return a securely generated random string
-func getRandomString(length int) string {
-	if length > maxRandomStringCharsLength {
-		length = maxRandomStringCharsLength
-	}
-	var builder strings.Builder
-	rand.Seed(time.Now().Unix())
-	for i := 0; i < length; i++ {
-		index := rand.Intn(maxRandomStringCharsLength)
-		builder.WriteString(string(randomStringChars[index]))
-	}
-	return builder.String()
 }

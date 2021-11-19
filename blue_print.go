@@ -163,7 +163,7 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 			context.matched = false
 			context.Engine.NotFoundHandle(context)
 			context.AbortWith(exit{})
-            return
+			return
 		}
 		ext := filepath.Ext(path)
 		cnt := mime.TypeByExtension(ext)
