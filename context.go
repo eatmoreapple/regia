@@ -20,7 +20,7 @@ const defaultMultipartMemory = 32 << 20
 
 type Context struct {
 	Request        *http.Request
-	ResponseWriter http.ResponseWriter
+	ResponseWriter ResponseWriter
 	index          uint8
 	abortIndex     uint8
 	group          HandleFuncGroup
@@ -47,7 +47,7 @@ type Context struct {
 }
 
 // init prepare for this request
-func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Params, group HandleFuncGroup) {
+func (c *Context) init(req *http.Request, writer ResponseWriter, params Params, group HandleFuncGroup) {
 	c.Request = req
 	c.ResponseWriter = writer
 	c.Params = params
@@ -75,12 +75,12 @@ func (c *Context) reset() {
 
 // start to handle current request
 func (c *Context) start() {
-	defer c.recover()
+	defer c.finish()
 	c.Next()
 }
 
 // I do not think it is a good design
-func (c *Context) recover() {
+func (c *Context) finish() {
 	if rec := recover(); rec != nil {
 		if e, ok := rec.(Exit); ok {
 			e.Exit(c)
