@@ -13,38 +13,38 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
 const defaultMultipartMemory = 32 << 20
 
 type Context struct {
-	Request        *http.Request
-	ResponseWriter http.ResponseWriter
-	index          uint8
-	abortIndex     uint8
-	group          HandleFuncGroup
-	// Mat multipart form memory size
-	// default 32M
-	MultipartMemory int64
-	// context data carrier
-	contextValue *SyncMap
-	Engine       *Engine
-	FileStorage  FileStorage
-	Parsers      Parsers
-	Validator    validators.Validator
-	Params       Params
-	abort        Exit
-	// if url matched
+	// if url is matched
 	matched bool
 	// escape is a flag decide if is return to the context pool
-	escape bool
-
+	escape     bool
+	index      uint8
+	abortIndex uint8
+	status     int
+	// multipart form memory size
+	// default 32M
+	MultipartMemory int64
 	// query cache
 	queryCache url.Values
 	// form cache
-	formCache url.Values
-	status    int
+	formCache      url.Values
+	items          map[string]interface{}
+	lock           sync.RWMutex
+	group          HandleFuncGroup
+	Request        *http.Request
+	ResponseWriter http.ResponseWriter
+	Engine         *Engine
+	FileStorage    FileStorage
+	Parsers        Parsers
+	Validator      validators.Validator
+	Params         Params
+	abort          Exit
 }
 
 // init prepare for this request
@@ -66,12 +66,7 @@ func (c *Context) reset() {
 	c.matched = false
 	c.queryCache = nil
 	c.formCache = nil
-	if c.contextValue != nil {
-		// clear and return to the syncMapPool
-		c.contextValue.Clear()
-		syncMapPool.Put(c.contextValue)
-		c.contextValue = nil
-	}
+	c.status = 0
 }
 
 // start to handle current request
@@ -167,14 +162,6 @@ func (c *Context) AddParser(p ...Parser) {
 	c.Parsers = append(c.Parsers, p...)
 }
 
-// ContextValue is a goroutine safe context data storage
-func (c *Context) ContextValue() *SyncMap {
-	if c.contextValue == nil {
-		c.contextValue = syncMapPool.Get().(*SyncMap)
-	}
-	return c.contextValue
-}
-
 // Query is a shortcut for c.Request.URL.Query()
 // but cached value for current context
 func (c *Context) Query() url.Values {
@@ -259,6 +246,24 @@ func (c *Context) BindXML(v interface{}) error {
 	return c.Bind(binder, v)
 }
 
+// GetValue get value from context
+func (c *Context) GetValue(key string) (value interface{}, exist bool) {
+	c.lock.RLock()
+	value, exist = c.items[key]
+	c.lock.RUnlock()
+	return
+}
+
+// SetValue set value to context
+func (c *Context) SetValue(key string, value interface{}) {
+	c.lock.Lock()
+	if c.items == nil {
+		c.items = make(map[string]interface{})
+	}
+	c.items[key] = value
+	c.lock.Unlock()
+}
+
 // SetStatus set response status code
 func (c *Context) SetStatus(code int) {
 	c.status = code
@@ -277,12 +282,12 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 // Render write response data with given Render
 func (c *Context) Render(render Render, data interface{}) error {
 	render.WriteContentType(c.ResponseWriter)
-	if !bodyAllowedForStatus(c.status) {
-		return nil
-	}
 	if c.status != 0 {
 		c.ResponseWriter.WriteHeader(c.status)
 		c.status = 0
+	}
+	if !bodyAllowedForStatus(c.status) {
+		return nil
 	}
 	return render.Render(c.ResponseWriter, data)
 }
