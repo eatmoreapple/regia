@@ -20,7 +20,7 @@ const defaultMultipartMemory = 32 << 20
 
 type Context struct {
 	Request        *http.Request
-	ResponseWriter ResponseWriter
+	ResponseWriter http.ResponseWriter
 	index          uint8
 	abortIndex     uint8
 	group          HandleFuncGroup
@@ -44,10 +44,11 @@ type Context struct {
 	queryCache url.Values
 	// form cache
 	formCache url.Values
+	status    int
 }
 
 // init prepare for this request
-func (c *Context) init(req *http.Request, writer ResponseWriter, params Params, group HandleFuncGroup) {
+func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Params, group HandleFuncGroup) {
 	c.Request = req
 	c.ResponseWriter = writer
 	c.Params = params
@@ -86,6 +87,10 @@ func (c *Context) finish() {
 			e.Exit(c)
 		} else {
 			c.Engine.InternalServerErrorHandle(c, rec)
+		}
+	} else {
+		if c.status != 0 {
+			c.ResponseWriter.WriteHeader(c.status)
 		}
 	}
 }
@@ -255,9 +260,8 @@ func (c *Context) BindXML(v interface{}) error {
 }
 
 // SetStatus set response status code
-// call this method at last
 func (c *Context) SetStatus(code int) {
-	c.ResponseWriter.WriteHeader(code)
+	c.status = code
 }
 
 // SetHeader set response header
@@ -272,6 +276,14 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 
 // Render write response data with given Render
 func (c *Context) Render(render Render, data interface{}) error {
+	render.WriteContentType(c.ResponseWriter)
+	if !bodyAllowedForStatus(c.status) {
+		return nil
+	}
+	if c.status != 0 {
+		c.ResponseWriter.WriteHeader(c.status)
+		c.status = 0
+	}
 	return render.Render(c.ResponseWriter, data)
 }
 

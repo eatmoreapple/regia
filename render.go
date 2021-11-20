@@ -13,6 +13,7 @@ import (
 // Render define Render to write response data
 type Render interface {
 	Render(writer http.ResponseWriter, data interface{}) error
+	WriteContentType(writer http.ResponseWriter)
 }
 
 type JsonRender struct {
@@ -20,17 +21,23 @@ type JsonRender struct {
 }
 
 func (j JsonRender) Render(writer http.ResponseWriter, v interface{}) error {
-	writeContentType(writer, jsonContentType)
 	return j.Serializer.Encode(writer, v)
+}
+
+func (j JsonRender) WriteContentType(writer http.ResponseWriter) {
+	writeContentType(writer, jsonContentType)
 }
 
 type XmlRender struct {
 	Serializer internal.Serializer
 }
 
-func (j XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
+func (x XmlRender) Render(writer http.ResponseWriter, v interface{}) error {
+	return x.Serializer.Encode(writer, v)
+}
+
+func (x XmlRender) WriteContentType(writer http.ResponseWriter) {
 	writeContentType(writer, textXmlContentType)
-	return j.Serializer.Encode(writer, v)
 }
 
 type StringRender struct {
@@ -39,13 +46,16 @@ type StringRender struct {
 }
 
 func (s StringRender) Render(writer http.ResponseWriter, v interface{}) (err error) {
-	writeContentType(writer, textHtmlContentType)
 	if len(s.data) > 0 {
 		_, err = fmt.Fprintf(writer, s.format, s.data...)
 	} else {
 		_, err = writer.Write(stringToByte(s.format))
 	}
 	return err
+}
+
+func (s StringRender) WriteContentType(writer http.ResponseWriter) {
+	writeContentType(writer, textXmlContentType)
 }
 
 // SetJsonSerializer is a setter for JSON Serializer

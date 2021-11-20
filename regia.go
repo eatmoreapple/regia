@@ -61,8 +61,6 @@ type Engine struct {
 	// global ContextParser
 	ContextParser Parsers
 	server        *http.Server
-
-	NewResponseWriter func(w http.ResponseWriter) ResponseWriter
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -127,8 +125,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			group = append(e.Interceptors, e.NotFoundHandle)
 		}
 	}
-	newWriter := e.NewResponseWriter(writer)
-	context.init(request, newWriter, params, group)
+	context.init(request, writer, params, group)
 	context.start()
 	if !context.escape {
 		context.reset()
@@ -150,9 +147,6 @@ func New() *Engine {
 		ContextValidator:          validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
-		NewResponseWriter: func(w http.ResponseWriter) ResponseWriter {
-			return &responseWriter{ResponseWriter: w}
-		},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	return engine
