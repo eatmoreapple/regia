@@ -27,6 +27,7 @@ type Context struct {
 	index      uint8
 	abortIndex uint8
 	status     int
+	writen     bool
 	// multipart form memory size
 	// default 32M
 	MultipartMemory int64
@@ -67,6 +68,8 @@ func (c *Context) reset() {
 	c.queryCache = nil
 	c.formCache = nil
 	c.status = 0
+	c.writen = false
+	c.abortIndex = 0
 }
 
 // start to handle current request
@@ -84,7 +87,7 @@ func (c *Context) finish() {
 			c.Engine.InternalServerErrorHandle(c, rec)
 		}
 	} else {
-		if c.status != 0 {
+		if c.status != 0 && !c.writen {
 			c.ResponseWriter.WriteHeader(c.status)
 		}
 	}
@@ -289,6 +292,7 @@ func (c *Context) Render(render Render, data interface{}) error {
 	if !bodyAllowedForStatus(c.status) {
 		return nil
 	}
+	c.writen = true
 	return render.Render(c.ResponseWriter, data)
 }
 
