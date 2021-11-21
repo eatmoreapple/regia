@@ -22,7 +22,7 @@ type HandleFunc func(context *Context)
 type HandleFuncGroup []HandleFunc
 
 func HandleWithValue(key string, value interface{}) HandleFunc {
-	return func(context *Context) { context.ContextValue().Set(key, value) }
+	return func(context *Context) { context.SetValue(key, value) }
 }
 
 func HandleWithParser(parser ...Parser) HandleFunc {
