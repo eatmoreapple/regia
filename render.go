@@ -55,7 +55,7 @@ func (s StringRender) Render(writer http.ResponseWriter, v interface{}) (err err
 }
 
 func (s StringRender) WriteContentType(writer http.ResponseWriter) {
-	writeContentType(writer, textXmlContentType)
+	writeContentType(writer, textHtmlContentType)
 }
 
 // SetJsonSerializer is a setter for JSON Serializer
