@@ -17,7 +17,7 @@ func getRandomString(length int) string {
 	}
 	var builder strings.Builder
 	builder.Grow(length)
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < length; i++ {
 		index := rand.Intn(maxRandomStringCharsLength)
 		builder.WriteString(string(randomStringChars[index]))
