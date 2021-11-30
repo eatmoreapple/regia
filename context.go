@@ -282,6 +282,10 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 	http.SetCookie(c.ResponseWriter, cookie)
 }
 
+//************************
+//*** Response Renders ***
+//************************
+
 // Render write response data with given Render
 func (c *Context) Render(render Render, data interface{}) error {
 	render.WriteContentType(c.ResponseWriter)
@@ -322,18 +326,27 @@ func (c *Context) String(format string, data ...interface{}) (err error) {
 }
 
 // Redirect Shortcut for http.Redirect
-func (c *Context) Redirect(code int, url string) {
-	http.Redirect(c.ResponseWriter, c.Request, url, code)
+func (c *Context) Redirect(code int, url string) error {
+	render := RedirectRender{Code: code, RedirectURL: url, Request: c.Request}
+	return c.Render(render, nil)
 }
 
 // ServeFile Shortcut for http.ServeFile
-func (c *Context) ServeFile(path string) {
-	http.ServeFile(c.ResponseWriter, c.Request, path)
+func (c *Context) ServeFile(filepath, filename string) error {
+	render := FileAttachmentRender{Request: c.Request, Filename: filename, FilePath: filepath}
+	return c.Render(render, nil)
 }
 
 // ServeContent Shortcut for http.ServeContent
-func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSeeker) {
-	http.ServeContent(c.ResponseWriter, c.Request, name, modTime, content)
+func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSeeker) error {
+	render := ContentRender{Name: name, ModTime: modTime, Content: content}
+	return c.Render(render, nil)
+}
+
+// Write []byte into response writer
+func (c *Context) Write(data []byte) error {
+	_, err := c.ResponseWriter.Write(data)
+	return err
 }
 
 // Escape can let context not return to the pool
@@ -387,12 +400,6 @@ func (c *Context) IsWebsocket() bool {
 // IsAjax check current if is an ajax request
 func (c *Context) IsAjax() bool {
 	return strings.EqualFold(c.Request.Header.Get("X-Requested-With"), "XMLHttpRequest")
-}
-
-// Write []byte into response writer
-func (c *Context) Write(data []byte) error {
-	_, err := c.ResponseWriter.Write(data)
-	return err
 }
 
 type contextKey struct{}
