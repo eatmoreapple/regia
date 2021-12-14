@@ -115,14 +115,15 @@ func (e *Engine) Run(addr string) error {
 func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
 	group, params := e.Router.Match(request)
+	context.matched = group == nil
 	if group != nil {
-		context.matched = true
 		if len(e.Interceptors) != 0 {
 			group = append(e.Interceptors, group...)
 		}
 	} else {
+		group = []HandleFunc{e.NotFoundHandle}
 		if len(e.Interceptors) != 0 {
-			group = append(e.Interceptors, e.NotFoundHandle)
+			group = append(e.Interceptors, group...)
 		}
 	}
 	context.init(request, writer, params, group)
