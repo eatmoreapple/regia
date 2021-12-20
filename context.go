@@ -108,21 +108,6 @@ func (c *Context) Next() {
 	}
 }
 
-// SetAbort Set Exit for this request
-func (c *Context) SetAbort(abort Exit) {
-	c.abort = abort
-}
-
-// Abort skip current handle and will call Context.abort
-// exit and do nothing by default
-func (c *Context) Abort() { c.AbortWith(c.abort) }
-
-// AbortWith skip current handle and call given exit
-func (c *Context) AbortWith(exit Exit) {
-	c.abortIndex = c.index - 1
-	panic(exit)
-}
-
 // Flusher Make http.ResponseWriter as http.Flusher
 func (c *Context) Flusher() http.Flusher { return c.ResponseWriter.(http.Flusher) }
 
@@ -206,6 +191,10 @@ func (c *Context) FormValue(key string) Value {
 func (c *Context) FormValues(key string) Values {
 	value := c.Form()[key]
 	return NewValues(value)
+}
+
+func (c *Context) ContextType() string {
+	return c.Request.Header.Get(contentType)
 }
 
 // Bind bind request to destination
@@ -352,6 +341,30 @@ func (c *Context) Write(data []byte) error {
 // Escape can let context not return to the pool
 func (c *Context) Escape() {
 	c.escape = true
+}
+
+// IsEscape return escape status
+func (c *Context) IsEscape() bool {
+	return c.escape
+}
+
+//************************
+//*** Abort Methods ******
+//************************
+
+// SetAbort Set Exit for this request
+func (c *Context) SetAbort(abort Exit) {
+	c.abort = abort
+}
+
+// Abort skip current handle and will call Context.abort
+// exit and do nothing by default
+func (c *Context) Abort() { c.AbortWith(c.abort) }
+
+// AbortWith skip current handle and call given exit
+func (c *Context) AbortWith(exit Exit) {
+	c.abortIndex = c.index - 1
+	panic(exit)
 }
 
 // IsAborted return that context is aborted

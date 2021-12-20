@@ -44,7 +44,7 @@ func (f FormParser) Parse(context *Context, v interface{}) error {
 }
 
 func (f FormParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.Request.Header.Get(contentType)), minePostForm)
+	return strings.Contains(strings.ToLower(context.ContextType()), minePostForm)
 }
 
 // JsonParser Parses JSON-serialized data.
@@ -55,7 +55,7 @@ func (j JsonParser) Parse(context *Context, v interface{}) error {
 }
 
 func (j JsonParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.Request.Header.Get(contentType)), mimeJson)
+	return strings.Contains(strings.ToLower(context.ContextType()), mimeJson)
 }
 
 // MultipartFormParser Parser for multipart form data, which may include file data.
@@ -66,5 +66,5 @@ func (m MultipartFormParser) Parse(context *Context, v interface{}) error {
 }
 
 func (m MultipartFormParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.Request.Header.Get(contentType)), mimeMultipartPostForm)
+	return strings.Contains(strings.ToLower(context.ContextType()), mimeMultipartPostForm)
 }
