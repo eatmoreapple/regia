@@ -13,6 +13,10 @@ const (
 	minePostForm          = "application/x-www-form-urlencoded"
 	mimeJson              = "application/json"
 	mimeMultipartPostForm = "multipart/form-data"
+	mimeText              = "text/plain"
+	mimeXml               = "application/xml"
+	mimeXml2              = "text/xml"
+	mimeHtml              = "text/html"
 )
 
 var noParserMatched = errors.New("no parser matched")
@@ -67,4 +71,15 @@ func (m MultipartFormParser) Parse(context *Context, v interface{}) error {
 
 func (m MultipartFormParser) Match(context *Context) bool {
 	return strings.Contains(strings.ToLower(context.ContextType()), mimeMultipartPostForm)
+}
+
+type XMLParser struct{}
+
+func (x XMLParser) Parse(context *Context, v interface{}) error {
+	return context.BindXML(v)
+}
+
+func (x XMLParser) Match(context *Context) bool {
+	return strings.Contains(strings.ToLower(context.ContextType()), mimeXml) ||
+		strings.Contains(strings.ToLower(context.ContextType()), mimeXml2)
 }

@@ -147,7 +147,7 @@ func New() *Engine {
 		FileStorage:               &LocalFileStorage{},
 		ContextValidator:          validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked
-		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}},
+		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	return engine
