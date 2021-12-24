@@ -22,16 +22,19 @@ const urlInfo = "[URL INFO]"
 
 // Starter will be called while engine is running
 type Starter interface {
-	Start(engine *Engine)
+	Start(engine *Engine) error
 }
 
 type BannerStarter struct{ Banner string }
 
-func (b BannerStarter) Start(engine *Engine) { fmt.Println(b.Banner) }
+func (b BannerStarter) Start(engine *Engine) error {
+	fmt.Println(b.Banner)
+	return nil
+}
 
 type UrlInfoStarter struct{}
 
-func (u UrlInfoStarter) Start(engine *Engine) {
+func (u UrlInfoStarter) Start(engine *Engine) error {
 	for method, nodes := range engine.methodsTree {
 		m := internal.FormatColor(97, method)
 		for _, n := range nodes {
@@ -40,4 +43,5 @@ func (u UrlInfoStarter) Start(engine *Engine) {
 			fmt.Printf("%-15s   %-18s   %-18s   %s\n", urlInfo, m, handleCount, path)
 		}
 	}
+	return nil
 }

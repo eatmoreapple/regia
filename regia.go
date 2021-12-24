@@ -70,12 +70,13 @@ func (e *Engine) dispatchContext() *Context {
 }
 
 // Start implement Starter and register all handles to router
-func (e *Engine) Start(*Engine) {
+func (e *Engine) Start(*Engine) error {
 	for method, nodes := range e.methodsTree {
 		for _, node := range nodes {
 			e.Router.Insert(method, node.path, node.group)
 		}
 	}
+	return nil
 }
 
 // SetNotFoundHandle Setter for Engine.NotFoundHandle
@@ -94,16 +95,19 @@ func (e *Engine) AddStarter(starters ...Starter) {
 }
 
 // Call all starters of this engine
-func (e *Engine) runStarter() {
+func (e *Engine) runStarter() error {
 	for _, starter := range e.Starters {
-		starter.Start(e)
+		if err := starter.Start(e); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // Init engine
-func (e *Engine) init() {
+func (e *Engine) init() error {
 	e.AddStarter(e)
-	e.runStarter()
+	return e.runStarter()
 }
 
 // Run Start Listen and serve
@@ -172,15 +176,23 @@ func stringToByte(s string) []byte {
 
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
-	e.SetUp()
+	err := e.SetUp()
+	if err != nil {
+		return err
+	}
 	e.server.Addr = addr
-	return e.server.ListenAndServeTLS(certFile, keyFile)
+	err = e.server.ListenAndServeTLS(certFile, keyFile)
+	return err
 }
 
 func (e *Engine) ListenAndServe(addr string) error {
-	e.SetUp()
+	err := e.SetUp()
+	if err != nil {
+		return err
+	}
 	e.server.Addr = addr
-	return e.server.ListenAndServe()
+	err = e.server.ListenAndServe()
+	return err
 }
 
 // Server is a getter for Engine
@@ -196,7 +208,10 @@ func (e *Engine) CloneServer() *http.Server {
 	return &http.Server{Handler: e}
 }
 
-func (e *Engine) SetUp() {
-	e.init()
+func (e *Engine) SetUp() error {
+	if err := e.init(); err != nil {
+		return err
+	}
 	e.makeServer()
+	return nil
 }
