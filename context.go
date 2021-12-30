@@ -210,10 +210,7 @@ func (c *Context) BindQuery(v interface{}) error {
 
 // BindForm bind PostForm to destination
 func (c *Context) BindForm(v interface{}) error {
-	if err := c.Request.ParseForm(); err != nil {
-		return err
-	}
-	binder := QueryBinder{}
+	binder := FormBinder{}
 	return c.Bind(binder, v)
 }
 
