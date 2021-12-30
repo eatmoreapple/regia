@@ -16,6 +16,13 @@ func (QueryBinder) Bind(context *Context, v interface{}) error {
 	return binders.BindForm(query, v)
 }
 
+type FormBinder struct{}
+
+func (FormBinder) Bind(context *Context, v interface{}) error {
+	form := context.Form()
+	return binders.BindForm(form, v)
+}
+
 type MultipartFormBodyBinder struct{}
 
 func (MultipartFormBodyBinder) Bind(context *Context, v interface{}) error {

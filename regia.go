@@ -119,7 +119,7 @@ func (e *Engine) Run(addr string) error {
 func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
 	group, params := e.Router.Match(request)
-	context.matched = group == nil
+	context.matched = len(group) == 0
 	if group != nil {
 		if len(e.Interceptors) != 0 {
 			group = append(e.Interceptors, group...)
