@@ -5,7 +5,6 @@
 package regia
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -18,8 +17,6 @@ const (
 	mimeXml2              = "text/xml"
 	mimeHtml              = "text/html"
 )
-
-var noParserMatched = errors.New("no parser matched")
 
 type Parser interface {
 	// Parse parsed incoming byte stream and return an error if parse failed
@@ -37,7 +34,7 @@ func (p Parsers) Parse(context *Context, v interface{}) error {
 			return parse.Parse(context, v)
 		}
 	}
-	return noParserMatched
+	return QueryParser{}.Parse(context, v)
 }
 
 // FormParser Parser for form data.
@@ -82,4 +79,14 @@ func (x XMLParser) Parse(context *Context, v interface{}) error {
 func (x XMLParser) Match(context *Context) bool {
 	return strings.Contains(strings.ToLower(context.ContextType()), mimeXml) ||
 		strings.Contains(strings.ToLower(context.ContextType()), mimeXml2)
+}
+
+type QueryParser struct{}
+
+func (q QueryParser) Parse(context *Context, v interface{}) error {
+	return context.BindQuery(v)
+}
+
+func (q QueryParser) Match(context *Context) bool {
+	return true
 }

@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"github.com/eatmoreapple/regia/internal"
+	"github.com/eatmoreapple/regia/renders"
 	"github.com/eatmoreapple/regia/validators"
 	"io"
 	"net/http"
@@ -194,7 +195,7 @@ func (c *Context) FormValues(key string) Values {
 }
 
 func (c *Context) ContextType() string {
-	return c.Request.Header.Get(contentType)
+	return c.Request.Header.Get("Content-Type")
 }
 
 // Bind bind request to destination
@@ -225,13 +226,13 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 
 // BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
-	binder := JsonBodyBinder{}
+	binder := JsonBodyBinder{Serializer: internal.JSON}
 	return c.Bind(binder, v)
 }
 
 // BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
-	binder := XmlBodyBinder{}
+	binder := XmlBodyBinder{Serializer: internal.XML}
 	return c.Bind(binder, v)
 }
 
@@ -273,8 +274,7 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 //************************
 
 // Render write response data with given Render
-func (c *Context) Render(render Render, data interface{}) error {
-	render.WriteContentType(c.ResponseWriter)
+func (c *Context) Render(render renders.Render, data interface{}) error {
 	if c.status != 0 {
 		c.ResponseWriter.WriteHeader(c.status)
 		c.status = 0
@@ -288,44 +288,37 @@ func (c *Context) Render(render Render, data interface{}) error {
 
 // JSON write json response
 func (c *Context) JSON(data interface{}) error {
-	render := JsonRender{Serializer: internal.JsonSerializer{}}
+	render := renders.JsonRender{Serializer: internal.JSON}
 	return c.Render(render, data)
 }
 
 // XML write xml response
 func (c *Context) XML(data interface{}) error {
-	render := XmlRender{Serializer: internal.XmlSerializer{}}
+	render := renders.XmlRender{Serializer: internal.XML}
 	return c.Render(render, data)
-}
-
-// Text write string response
-// Deprecated
-// Use c.String instead
-func (c *Context) Text(format string, data ...interface{}) (err error) {
-	return c.String(format, data...)
 }
 
 // String write string response
 func (c *Context) String(format string, data ...interface{}) (err error) {
-	render := StringRender{format: format, data: data}
+	render := renders.StringRender{Format: format, Data: data}
 	return c.Render(render, nil)
 }
 
 // Redirect Shortcut for http.Redirect
 func (c *Context) Redirect(code int, url string) error {
-	render := RedirectRender{Code: code, RedirectURL: url, Request: c.Request}
+	render := renders.RedirectRender{Code: code, RedirectURL: url, Request: c.Request}
 	return c.Render(render, nil)
 }
 
 // ServeFile Shortcut for http.ServeFile
 func (c *Context) ServeFile(filepath, filename string) error {
-	render := FileAttachmentRender{Request: c.Request, Filename: filename, FilePath: filepath}
+	render := renders.FileAttachmentRender{Request: c.Request, Filename: filename, FilePath: filepath}
 	return c.Render(render, nil)
 }
 
 // ServeContent Shortcut for http.ServeContent
 func (c *Context) ServeContent(name string, modTime time.Time, content io.ReadSeeker) error {
-	render := ContentRender{Name: name, ModTime: modTime, Content: content}
+	render := renders.ContentRender{Name: name, ModTime: modTime, Content: content}
 	return c.Render(render, nil)
 }
 
@@ -389,9 +382,9 @@ func (c *Context) AbortWithXML(data interface{}) {
 	c.Abort()
 }
 
-// AbortWithText write string response and exit
-func (c *Context) AbortWithText(text string, data ...interface{}) {
-	_ = c.Text(text, data...)
+// AbortWithString write string response and exit
+func (c *Context) AbortWithString(text string, data ...interface{}) {
+	_ = c.String(text, data...)
 	c.Abort()
 }
 

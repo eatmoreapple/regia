@@ -186,8 +186,6 @@ type Warehouse interface {
 
 var _ Warehouse = new(SyncMap)
 
-var syncMapPool = sync.Pool{New: func() interface{} { return new(SyncMap) }}
-
 type SyncMap struct {
 	item map[interface{}]interface{}
 	mu   sync.RWMutex

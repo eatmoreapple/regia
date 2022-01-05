@@ -168,9 +168,9 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 		ext := filepath.Ext(path)
 		cnt := mime.TypeByExtension(ext)
 		if len(cnt) == 0 {
-			cnt = octetStream
+			cnt = "application/octet-stream"
 		}
-		context.SetHeader(contentType, cnt)
+		context.SetHeader("Content-Type", cnt)
 		server.ServeHTTP(context.ResponseWriter, context.Request)
 	}
 	group = append(group, handle)

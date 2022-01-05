@@ -29,14 +29,18 @@ func (MultipartFormBodyBinder) Bind(context *Context, v interface{}) error {
 	return binders.BindMultipartForm(context.Request.MultipartForm, v)
 }
 
-type JsonBodyBinder struct{}
-
-func (j JsonBodyBinder) Bind(context *Context, v interface{}) error {
-	return internal.JSON.Decode(context.Request.Body, v)
+type JsonBodyBinder struct {
+	Serializer internal.Serializer
 }
 
-type XmlBodyBinder struct{}
+func (j JsonBodyBinder) Bind(context *Context, v interface{}) error {
+	return j.Serializer.Decode(context.Request.Body, v)
+}
+
+type XmlBodyBinder struct {
+	Serializer internal.Serializer
+}
 
 func (j XmlBodyBinder) Bind(context *Context, v interface{}) error {
-	return internal.XML.Decode(context.Request.Body, v)
+	return j.Serializer.Decode(context.Request.Body, v)
 }

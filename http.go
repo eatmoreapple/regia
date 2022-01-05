@@ -9,14 +9,6 @@ import (
 )
 
 const (
-	contentType         = "Content-Type"
-	jsonContentType     = "application/json;charset=utf-8"
-	textHtmlContentType = "text/html;charset=utf-8"
-	textXmlContentType  = "text/xml;charset=utf-8"
-	octetStream         = "application/octet-stream"
-)
-
-const (
 	MethodGet     = "Get"
 	MethodPost    = "Post"
 	MethodPut     = "Put"
@@ -49,11 +41,6 @@ var HttpRequestMethodMapping = map[string]string{
 	MethodHead:    http.MethodHead,
 	MethodOptions: http.MethodOptions,
 	MethodTrace:   http.MethodTrace,
-}
-
-func writeContentType(writer http.ResponseWriter, cT string) {
-	writer.Header().Del(contentType)
-	writer.Header().Set(contentType, cT)
 }
 
 // bodyAllowedForStatus reports whether a given response status code

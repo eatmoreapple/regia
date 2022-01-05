@@ -7,9 +7,7 @@ package regia
 import (
 	"github.com/eatmoreapple/regia/validators"
 	"net/http"
-	"reflect"
 	"sync"
-	"unsafe"
 )
 
 const (
@@ -138,42 +136,6 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// New Constructor for Engine
-func New() *Engine {
-	engine := &Engine{
-		Router:                    make(HttpRouter),
-		BluePrint:                 NewBluePrint(),
-		NotFoundHandle:            HandleNotFound,
-		InternalServerErrorHandle: HandleInternalServerError,
-		Warehouse:                 new(SyncMap),
-		MultipartMemory:           defaultMultipartMemory,
-		Abort:                     exit{},
-		FileStorage:               &LocalFileStorage{},
-		ContextValidator:          validators.DefaultValidator{},
-		// Add default parser to make sure that Context could be worked
-		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
-	}
-	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
-	return engine
-}
-
-// Default Engine for use
-func Default() *Engine {
-	engine := New()
-	engine.AddInterceptors(LogInterceptor)
-	engine.AddStarter(&BannerStarter{Banner: Banner}, &UrlInfoStarter{})
-	return engine
-}
-
-// Map is a shortcut fot map[string]interface{}
-type Map map[string]interface{}
-
-// unsafe string to byte
-// without memory copy
-func stringToByte(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&*(*reflect.StringHeader)(unsafe.Pointer(&s))))
-}
-
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
 	err := e.SetUp()
@@ -214,4 +176,31 @@ func (e *Engine) SetUp() error {
 	}
 	e.makeServer()
 	return nil
+}
+
+// New Constructor for Engine
+func New() *Engine {
+	engine := &Engine{
+		Router:                    make(HttpRouter),
+		BluePrint:                 NewBluePrint(),
+		NotFoundHandle:            HandleNotFound,
+		InternalServerErrorHandle: HandleInternalServerError,
+		Warehouse:                 new(SyncMap),
+		MultipartMemory:           defaultMultipartMemory,
+		Abort:                     exit{},
+		FileStorage:               &LocalFileStorage{},
+		ContextValidator:          validators.DefaultValidator{},
+		// Add default parser to make sure that Context could be worked
+		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
+	}
+	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
+	return engine
+}
+
+// Default Engine for use
+func Default() *Engine {
+	engine := New()
+	engine.AddInterceptors(LogInterceptor)
+	engine.AddStarter(&BannerStarter{Banner: Banner}, &UrlInfoStarter{})
+	return engine
 }
