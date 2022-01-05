@@ -47,9 +47,6 @@ type Engine struct {
 	// Context pool
 	pool sync.Pool
 
-	// global Context Abort
-	Abort Exit
-
 	// global Context FileStorage
 	FileStorage FileStorage
 
@@ -187,7 +184,6 @@ func New() *Engine {
 		InternalServerErrorHandle: HandleInternalServerError,
 		Warehouse:                 new(SyncMap),
 		MultipartMemory:           defaultMultipartMemory,
-		Abort:                     exit{},
 		FileStorage:               &LocalFileStorage{},
 		ContextValidator:          validators.DefaultValidator{},
 		// Add default parser to make sure that Context could be worked

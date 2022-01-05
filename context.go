@@ -341,7 +341,7 @@ func (c *Context) IsEscape() bool {
 
 // Abort skip current handle and will call Context.abort
 // exit and do nothing by default
-func (c *Context) Abort() { c.abortIndex = c.index - 1 }
+func (c *Context) Abort() { c.abortIndex = c.index }
 
 // IsAborted return that context is aborted
 func (c *Context) IsAborted() bool {
