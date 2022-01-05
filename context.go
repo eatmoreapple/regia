@@ -7,6 +7,7 @@ package regia
 import (
 	"context"
 	"errors"
+	"github.com/eatmoreapple/regia/binders"
 	"github.com/eatmoreapple/regia/internal"
 	"github.com/eatmoreapple/regia/renders"
 	"github.com/eatmoreapple/regia/validators"
@@ -199,19 +200,22 @@ func (c *Context) ContextType() string {
 }
 
 // Bind bind request to destination
-func (c *Context) Bind(binder Binder, v interface{}) error {
-	return binder.Bind(c, v)
+func (c *Context) Bind(binder binders.Binder, v interface{}) error {
+	return binder.Bind(c.Request, v)
 }
 
 // BindQuery bind Query to destination
 func (c *Context) BindQuery(v interface{}) error {
-	binder := QueryBinder{}
+	binder := binders.QueryBinder{}
 	return c.Bind(binder, v)
 }
 
 // BindForm bind PostForm to destination
 func (c *Context) BindForm(v interface{}) error {
-	binder := FormBinder{}
+	if err := c.Request.ParseForm(); err != nil {
+		return err
+	}
+	binder := binders.FormBinder{}
 	return c.Bind(binder, v)
 }
 
@@ -220,19 +224,19 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 	if err := c.Request.ParseMultipartForm(c.MultipartMemory); err != nil {
 		return err
 	}
-	binder := MultipartFormBodyBinder{}
+	binder := binders.MultipartFormBodyBinder{}
 	return c.Bind(binder, v)
 }
 
 // BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
-	binder := JsonBodyBinder{Serializer: internal.JSON}
+	binder := binders.JsonBodyBinder{Serializer: internal.JSON}
 	return c.Bind(binder, v)
 }
 
 // BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
-	binder := XmlBodyBinder{Serializer: internal.XML}
+	binder := binders.XmlBodyBinder{Serializer: internal.XML}
 	return c.Bind(binder, v)
 }
 

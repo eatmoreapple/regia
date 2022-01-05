@@ -21,11 +21,11 @@ var EmptyMultipartFormError = errors.New("nil *multipart.Form got")
 
 type BindMethod func(reflect.Value, []string) error
 
-type FormBinder interface {
+type formBinder interface {
 	BindForm(values url.Values, v interface{}) error
 }
 
-type MultipartFormBinder interface {
+type multipartFormBinder interface {
 	BindMultipartForm(form *multipart.Form, v interface{}) error
 }
 
@@ -211,6 +211,6 @@ func (m *HttpMultipartFormBinder) BindMultipartForm(form *multipart.Form, v inte
 var (
 	DefaultFormBinder                              = &UrlFormBinder{TagName: formTag, BindTagName: bindTag}
 	DefaultMultipartFormBinder                     = &HttpMultipartFormBinder{UrlFormBinder: DefaultFormBinder, FieldTag: fileTag}
-	_                          FormBinder          = DefaultFormBinder
-	_                          MultipartFormBinder = DefaultMultipartFormBinder
+	_                          formBinder          = DefaultFormBinder
+	_                          multipartFormBinder = DefaultMultipartFormBinder
 )
