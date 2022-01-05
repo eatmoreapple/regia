@@ -162,7 +162,7 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 		if _, err := os.Stat(p); err != nil {
 			context.matched = false
 			context.Engine.NotFoundHandle(context)
-			context.AbortWith(exit{})
+			context.Abort()
 			return
 		}
 		ext := filepath.Ext(path)

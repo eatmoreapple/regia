@@ -47,7 +47,6 @@ type Context struct {
 	Parsers        Parsers
 	Validator      validators.Validator
 	Params         Params
-	abort          Exit
 }
 
 // init prepare for this request
@@ -56,7 +55,6 @@ func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Par
 	c.ResponseWriter = writer
 	c.Params = params
 	c.group = group
-	c.abort = c.Engine.Abort
 	c.FileStorage = c.Engine.FileStorage
 	c.MultipartMemory = c.Engine.MultipartMemory
 	c.Validator = c.Engine.ContextValidator
@@ -82,16 +80,8 @@ func (c *Context) start() {
 
 // I do not think it is a good design
 func (c *Context) finish() {
-	if rec := recover(); rec != nil {
-		if e, ok := rec.(Exit); ok {
-			e.Exit(c)
-		} else {
-			c.Engine.InternalServerErrorHandle(c, rec)
-		}
-	} else {
-		if c.status != 0 && !c.writen {
-			c.ResponseWriter.WriteHeader(c.status)
-		}
+	if c.status != 0 && !c.writen {
+		c.ResponseWriter.WriteHeader(c.status)
 	}
 }
 
@@ -103,7 +93,7 @@ func (c *Context) IsMatched() bool {
 // Next call handle
 func (c *Context) Next() {
 	c.index++
-	for c.index <= uint8(len(c.group)) {
+	for c.index <= uint8(len(c.group)) && !c.IsAborted() {
 		handle := c.group[c.index-1]
 		handle(c)
 		c.index++
@@ -260,6 +250,9 @@ func (c *Context) SetValue(key string, value interface{}) {
 
 // SetStatus set response status code
 func (c *Context) SetStatus(code int) {
+	if code < 0 {
+		code = 0
+	}
 	c.status = code
 }
 
@@ -346,20 +339,9 @@ func (c *Context) IsEscape() bool {
 //*** Abort Methods ******
 //************************
 
-// SetAbort Set Exit for this request
-func (c *Context) SetAbort(abort Exit) {
-	c.abort = abort
-}
-
 // Abort skip current handle and will call Context.abort
 // exit and do nothing by default
-func (c *Context) Abort() { c.AbortWith(c.abort) }
-
-// AbortWith skip current handle and call given exit
-func (c *Context) AbortWith(exit Exit) {
-	c.abortIndex = c.index - 1
-	panic(exit)
-}
+func (c *Context) Abort() { c.abortIndex = c.index - 1 }
 
 // IsAborted return that context is aborted
 func (c *Context) IsAborted() bool {

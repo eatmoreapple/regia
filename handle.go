@@ -5,7 +5,6 @@
 package regia
 
 import (
-	"errors"
 	"fmt"
 	"github.com/eatmoreapple/regia/internal"
 	"github.com/eatmoreapple/regia/validators"
@@ -37,10 +36,6 @@ func HandleWithFileStorage(fs FileStorage) HandleFunc {
 	return func(context *Context) { context.FileStorage = fs }
 }
 
-func HandleWithAbort(e Exit) HandleFunc {
-	return func(context *Context) { context.abort = e }
-}
-
 func HandleOptions(allowMethods ...string) HandleFunc {
 	if allowMethods == nil {
 		allowMethods = httpMethods[:]
@@ -69,19 +64,6 @@ func HandleInternalServerError(context *Context, ret interface{}) {
 		}
 	}
 	context.String(http.StatusText(http.StatusInternalServerError))
-}
-
-func HandleWithExit(exit Exit) HandleFunc {
-	return func(context *Context) {
-		context.AbortWith(exit)
-	}
-}
-
-func Flush(exit Exit) error {
-	if exit == nil {
-		return errors.New("exit can not be nil")
-	}
-	panic(exit)
 }
 
 const timeFormat = "2006-01-02 15:04:05"
