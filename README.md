@@ -27,33 +27,18 @@ package main
 import "github.com/eatmoreapple/regia"
 
 func main() {
-	engine := regia.Default()
-	
-	engine.GET("/", func(context *regia.Context) {
-		context.JSON(map[string]interface{}{"hello": "world"})
+	engine := regia.New()
+	engine.GET("/string", func(context *regia.Context) {
+		context.String("string")
 	})
-	
-	engine.POST("/", func(context *regia.Context) {
-		var form struct {
-			Name    string                `form:"name" validate:"required(m=name is required)"`
-			Age     int                   `form:"age" validate:"gt(m=adult required,v=18)"`
-			Hobbies []string              `form:"hobbies"`
-			Avatar  *multipart.FileHeader `file:"avatar"`
+	engine.POST("/json", func(context *regia.Context) {
+		var body struct {
+			Name string `json:"name"`
+			Age  uint8  `json:"age"`
 		}
-		// Parse the form.
-		if err := context.Data(&form); err != nil {
-			context.JSON(regia.Map{"err": err.Error()})
-			return
-		}
-		// save upload file
-		path, err := context.FileStorage.Save(form.Avatar)
-		if err != nil {
-			context.JSON(regia.Map{"err": err.Error()})
-			return
-		}
-		context.JSON(regia.Map{"name": form.Name, "hobbies": form.Hobbies, "age": form.Age, "avatar": path})
+		context.BindJSON(&body)
+		context.JSON(body)
 	})
-	
 	engine.Run(":8000")
 }
 ```
@@ -65,10 +50,9 @@ $ go run main.go
 
 
 
-#### Bind Form Data
 
-```go
-```
+
+
 
 
 

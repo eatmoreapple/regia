@@ -26,3 +26,17 @@ func BenchmarkOneRoute(B *testing.B) {
 	router.init()
 	runRequest(B, router, "GET", "/ping")
 }
+
+func BenchmarkRenderString(B *testing.B) {
+	router := New()
+	router.GET("/string", func(c *Context) { c.String("%s-%s", "hello", "world") })
+	router.init()
+	runRequest(B, router, "GET", "/string")
+}
+
+func BenchmarkRenderJson(B *testing.B) {
+	router := New()
+	router.GET("/json", func(c *Context) { c.JSON(Map{"hello": "world"}) })
+	router.init()
+	runRequest(B, router, "GET", "/json")
+}
