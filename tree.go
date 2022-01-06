@@ -46,6 +46,7 @@ const (
 )
 
 type routerNode struct {
+	fullPath  string
 	path      string
 	wildChild bool
 	nType     nodeType
@@ -83,7 +84,7 @@ func (n *routerNode) incrementChildPrio(pos int) int {
 // addRoute adds a routerNode with the given handle to the path.
 // Not concurrency-safe!
 func (n *routerNode) addRoute(path string, handle HandleFuncGroup) {
-	fullPath := path
+	n.fullPath = path
 	n.priority++
 	numParams := countParams(path)
 
@@ -161,9 +162,9 @@ func (n *routerNode) addRoute(path string, handle HandleFuncGroup) {
 						} else {
 							pathSeg = strings.SplitN(path, "/", 2)[0]
 						}
-						prefix := fullPath[:strings.Index(fullPath, pathSeg)] + n.path
+						prefix := n.fullPath[:strings.Index(n.fullPath, pathSeg)] + n.path
 						panic("'" + pathSeg +
-							"' in new path '" + fullPath +
+							"' in new path '" + n.fullPath +
 							"' conflicts with existing wildcard '" + n.path +
 							"' in existing prefix '" + prefix +
 							"'")
@@ -199,19 +200,19 @@ func (n *routerNode) addRoute(path string, handle HandleFuncGroup) {
 					n.incrementChildPrio(len(n.indices) - 1)
 					n = child
 				}
-				n.insertChild(numParams, path, fullPath, handle)
+				n.insertChild(numParams, path, n.fullPath, handle)
 				return
 
 			} else if i == len(path) { // Make routerNode a (in-path) leaf
 				if n.handle != nil {
-					panic("a handle is already registered for path '" + fullPath + "'")
+					panic("a handle is already registered for path '" + n.fullPath + "'")
 				}
 				n.handle = handle
 			}
 			return
 		}
 	} else { // Empty tree
-		n.insertChild(numParams, path, fullPath, handle)
+		n.insertChild(numParams, path, n.fullPath, handle)
 		n.nType = root
 	}
 }

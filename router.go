@@ -4,13 +4,9 @@
 
 package regia
 
-import (
-	"net/http"
-)
-
 type Router interface {
 	Insert(method, path string, handle HandleFuncGroup)
-	Match(req *http.Request) (HandleFuncGroup, Params)
+	Match(context *Context) (HandleFuncGroup, Params)
 }
 
 // HttpRouter implement Router
@@ -31,10 +27,11 @@ func (r HttpRouter) Insert(method, path string, handle HandleFuncGroup) {
 	root.addRoute(path, handle)
 }
 
-func (r HttpRouter) Match(req *http.Request) (HandleFuncGroup, Params) {
-	method := req.Method
+func (r HttpRouter) Match(ctx *Context) (HandleFuncGroup, Params) {
+	method := ctx.Request.Method
 	if root := r[method]; root != nil {
-		group, params, _ := root.getValue(req.URL.Path)
+		group, params, _ := root.getValue(ctx.Request.URL.Path)
+		ctx.fullPath = root.fullPath
 		return group, params
 	}
 	return nil, nil

@@ -18,7 +18,7 @@ var Banner = `
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝
 `
 
-const urlInfo = "[URL INFO]"
+const _regia = "[REGIA]"
 
 // Starter will be called while engine is running
 type Starter interface {
@@ -40,7 +40,7 @@ func (u UrlInfoStarter) Start(engine *Engine) error {
 		for _, n := range nodes {
 			handleCount := internal.BlueString(fmt.Sprintf("%d handlers", len(n.group)))
 			path := internal.YellowString(n.path)
-			fmt.Printf("%-15s   %-18s   %-18s   %s\n", urlInfo, m, handleCount, path)
+			fmt.Printf("%-15s   %-18s   %-18s   %s\n", _regia, m, handleCount, path)
 		}
 	}
 	return nil

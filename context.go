@@ -29,7 +29,7 @@ type Context struct {
 	index      uint8
 	abortIndex uint8
 	status     int
-	writen     bool
+	written    bool
 	// multipart form memory size
 	// default 32M
 	MultipartMemory int64
@@ -47,12 +47,11 @@ type Context struct {
 	Parsers        Parsers
 	Validator      validators.Validator
 	Params         Params
+	fullPath       string
 }
 
 // init prepare for this request
-func (c *Context) init(req *http.Request, writer http.ResponseWriter, params Params, group HandleFuncGroup) {
-	c.Request = req
-	c.ResponseWriter = writer
+func (c *Context) init(params Params, group HandleFuncGroup) {
 	c.Params = params
 	c.group = group
 	c.FileStorage = c.Engine.FileStorage
@@ -68,7 +67,7 @@ func (c *Context) reset() {
 	c.queryCache = nil
 	c.formCache = nil
 	c.status = 0
-	c.writen = false
+	c.written = false
 	c.abortIndex = 0
 }
 
@@ -80,7 +79,7 @@ func (c *Context) start() {
 
 // I do not think it is a good design
 func (c *Context) finish() {
-	if c.status != 0 && !c.writen {
+	if c.status != 0 && !c.written {
 		c.ResponseWriter.WriteHeader(c.status)
 	}
 }
@@ -167,7 +166,7 @@ func (c *Context) QueryValues(key string) Values {
 // but value for current context
 func (c *Context) Form() url.Values {
 	if c.formCache == nil {
-		c.Request.ParseForm()
+		_ = c.Request.ParseForm()
 		c.formCache = c.Request.PostForm
 	}
 	return c.formCache
@@ -185,7 +184,13 @@ func (c *Context) FormValues(key string) Values {
 	return NewValues(value)
 }
 
-func (c *Context) ContextType() string {
+// FullPath return full path of current request
+func (c *Context) FullPath() string {
+	return c.fullPath
+}
+
+// ContentType return Content-Type header
+func (c *Context) ContentType() string {
 	return c.Request.Header.Get("Content-Type")
 }
 
@@ -279,7 +284,7 @@ func (c *Context) Render(render renders.Render, data interface{}) error {
 	if !bodyAllowedForStatus(c.status) {
 		return nil
 	}
-	c.writen = true
+	c.written = true
 	return render.Render(c.ResponseWriter, data)
 }
 

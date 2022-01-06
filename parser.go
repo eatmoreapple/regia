@@ -45,7 +45,7 @@ func (f FormParser) Parse(context *Context, v interface{}) error {
 }
 
 func (f FormParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.ContextType()), minePostForm)
+	return strings.Contains(strings.ToLower(context.ContentType()), minePostForm)
 }
 
 // JsonParser Parses JSON-serialized data.
@@ -56,7 +56,7 @@ func (j JsonParser) Parse(context *Context, v interface{}) error {
 }
 
 func (j JsonParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.ContextType()), mimeJson)
+	return strings.Contains(strings.ToLower(context.ContentType()), mimeJson)
 }
 
 // MultipartFormParser Parser for multipart form data, which may include file data.
@@ -67,7 +67,7 @@ func (m MultipartFormParser) Parse(context *Context, v interface{}) error {
 }
 
 func (m MultipartFormParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.ContextType()), mimeMultipartPostForm)
+	return strings.Contains(strings.ToLower(context.ContentType()), mimeMultipartPostForm)
 }
 
 type XMLParser struct{}
@@ -77,8 +77,8 @@ func (x XMLParser) Parse(context *Context, v interface{}) error {
 }
 
 func (x XMLParser) Match(context *Context) bool {
-	return strings.Contains(strings.ToLower(context.ContextType()), mimeXml) ||
-		strings.Contains(strings.ToLower(context.ContextType()), mimeXml2)
+	return strings.Contains(strings.ToLower(context.ContentType()), mimeXml) ||
+		strings.Contains(strings.ToLower(context.ContentType()), mimeXml2)
 }
 
 type QueryParser struct{}

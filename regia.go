@@ -116,7 +116,9 @@ func (e *Engine) Run(addr string) error {
 // ServeHTTP implement http.Handle
 func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
-	group, params := e.Router.Match(request)
+	context.Request = request
+	context.ResponseWriter = writer
+	group, params := e.Router.Match(context)
 	context.matched = len(group) == 0
 	if group != nil {
 		if len(e.Interceptors) != 0 {
@@ -128,7 +130,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			group = append(e.Interceptors, group...)
 		}
 	}
-	context.init(request, writer, params, group)
+	context.init(params, group)
 	context.start()
 	if !context.escape {
 		context.reset()
@@ -181,15 +183,14 @@ func (e *Engine) SetUp() error {
 // New Constructor for Engine
 func New() *Engine {
 	engine := &Engine{
-		Router:                    make(HttpRouter),
-		BluePrint:                 NewBluePrint(),
-		NotFoundHandle:            HandleNotFound,
-		InternalServerErrorHandle: HandleInternalServerError,
-		Warehouse:                 new(SyncMap),
-		MultipartMemory:           defaultMultipartMemory,
-		FileStorage:               &LocalFileStorage{},
-		ContextValidator:          validators.DefaultValidator{},
-		HTMLLoader:                new(TemplateLoader),
+		Router:           make(HttpRouter),
+		BluePrint:        NewBluePrint(),
+		NotFoundHandle:   HandleNotFound,
+		Warehouse:        new(SyncMap),
+		MultipartMemory:  defaultMultipartMemory,
+		FileStorage:      &LocalFileStorage{},
+		ContextValidator: validators.DefaultValidator{},
+		HTMLLoader:       new(TemplateLoader),
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
 	}
@@ -200,7 +201,6 @@ func New() *Engine {
 // Default Engine for use
 func Default() *Engine {
 	engine := New()
-	engine.AddInterceptors(LogInterceptor)
 	engine.AddStarter(&BannerStarter{Banner: Banner}, &UrlInfoStarter{})
 	return engine
 }
