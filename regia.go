@@ -57,8 +57,8 @@ type Engine struct {
 	ContextParser Parsers
 
 	// HTML Loader
-	TemplateLoader TemplateLoader
-	server         *http.Server
+	HTMLLoader HTMLLoader
+	server     *http.Server
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -189,7 +189,7 @@ func New() *Engine {
 		MultipartMemory:           defaultMultipartMemory,
 		FileStorage:               &LocalFileStorage{},
 		ContextValidator:          validators.DefaultValidator{},
-		TemplateLoader:            new(HTMLLoader),
+		HTMLLoader:                new(TemplateLoader),
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
 	}

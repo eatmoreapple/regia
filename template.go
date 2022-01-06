@@ -6,16 +6,16 @@ import (
 	"html/template"
 )
 
-type TemplateLoader interface {
+type HTMLLoader interface {
 	Load(name string) (renders.Render, error) // Load a template by name
 	ParseGlob(pattern string) error           // ParseGlob templates by pattern
 }
 
-type HTMLLoader struct {
+type TemplateLoader struct {
 	*template.Template
 }
 
-func (h *HTMLLoader) Load(name string) (renders.Render, error) {
+func (h *TemplateLoader) Load(name string) (renders.Render, error) {
 	t := h.Lookup(name)
 	if t == nil {
 		return nil, errors.New("template not found")
@@ -24,7 +24,7 @@ func (h *HTMLLoader) Load(name string) (renders.Render, error) {
 	return render, nil
 }
 
-func (h *HTMLLoader) ParseGlob(pattern string) error {
+func (h *TemplateLoader) ParseGlob(pattern string) error {
 	var err error
 	h.Template, err = template.ParseGlob(pattern)
 	return err

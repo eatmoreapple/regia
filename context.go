@@ -303,7 +303,7 @@ func (c *Context) String(format string, data ...interface{}) (err error) {
 
 // HTML write html response
 func (c *Context) HTML(name string, data interface{}) error {
-	render, err := c.Engine.TemplateLoader.Load(name)
+	render, err := c.Engine.HTMLLoader.Load(name)
 	if err != nil {
 		return err
 	}
