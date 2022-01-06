@@ -301,6 +301,15 @@ func (c *Context) String(format string, data ...interface{}) (err error) {
 	return c.Render(render, nil)
 }
 
+// HTML write html response
+func (c *Context) HTML(name string, data interface{}) error {
+	render, err := c.Engine.TemplateLoader.Load(name)
+	if err != nil {
+		return err
+	}
+	return c.Render(render, data)
+}
+
 // Redirect Shortcut for http.Redirect
 func (c *Context) Redirect(code int, url string) error {
 	render := renders.RedirectRender{Code: code, RedirectURL: url, Request: c.Request}
