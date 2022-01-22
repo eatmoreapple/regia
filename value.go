@@ -37,6 +37,11 @@ func (v Value) Int(def ...int) (int, error) {
 	return int(i), err
 }
 
+func (v Value) MustInt(def ...int) int {
+	i, _ := v.Int(def...)
+	return i
+}
+
 func (v Value) Int8(def ...int8) (int8, error) {
 	i, err := strconv.ParseInt(string(v), 10, 8)
 	if err != nil || v.IsEmpty() {
@@ -45,6 +50,11 @@ func (v Value) Int8(def ...int8) (int8, error) {
 		}
 	}
 	return int8(i), err
+}
+
+func (v Value) MustInt8(def ...int8) int8 {
+	i, _ := v.Int8(def...)
+	return i
 }
 
 func (v Value) Int16(def ...int16) (int16, error) {
@@ -57,6 +67,11 @@ func (v Value) Int16(def ...int16) (int16, error) {
 	return int16(i), err
 }
 
+func (v Value) MustInt16(def ...int16) int16 {
+	i, _ := v.Int16(def...)
+	return i
+}
+
 func (v Value) Int32(def ...int32) (int32, error) {
 	i, err := strconv.ParseInt(string(v), 10, 32)
 	if err != nil || v.IsEmpty() {
@@ -65,6 +80,11 @@ func (v Value) Int32(def ...int32) (int32, error) {
 		}
 	}
 	return int32(i), err
+}
+
+func (v Value) MustInt32(def ...int32) int32 {
+	i, _ := v.Int32(def...)
+	return i
 }
 
 func (v Value) Int64(def ...int64) (int64, error) {
@@ -77,6 +97,11 @@ func (v Value) Int64(def ...int64) (int64, error) {
 	return i, err
 }
 
+func (v Value) MustInt64(def ...int64) int64 {
+	i, _ := v.Int64(def...)
+	return i
+}
+
 func (v Value) Uint(def ...uint) (uint, error) {
 	i, err := strconv.ParseUint(string(v), 10, 0)
 	if err != nil || v.IsEmpty() {
@@ -85,6 +110,11 @@ func (v Value) Uint(def ...uint) (uint, error) {
 		}
 	}
 	return uint(i), err
+}
+
+func (v Value) MustUint(def ...uint) uint {
+	i, _ := v.Uint(def...)
+	return i
 }
 
 func (v Value) Uint8(def ...uint8) (uint8, error) {
@@ -97,6 +127,11 @@ func (v Value) Uint8(def ...uint8) (uint8, error) {
 	return uint8(i), err
 }
 
+func (v Value) MustUint8(def ...uint8) uint8 {
+	i, _ := v.Uint8(def...)
+	return i
+}
+
 func (v Value) Uint16(def ...uint16) (uint16, error) {
 	i, err := strconv.ParseUint(string(v), 10, 16)
 	if err != nil || v.IsEmpty() {
@@ -105,6 +140,11 @@ func (v Value) Uint16(def ...uint16) (uint16, error) {
 		}
 	}
 	return uint16(i), err
+}
+
+func (v Value) MustUint16(def ...uint16) uint16 {
+	i, _ := v.Uint16(def...)
+	return i
 }
 
 func (v Value) Uint32(def ...uint32) (uint32, error) {
@@ -117,6 +157,11 @@ func (v Value) Uint32(def ...uint32) (uint32, error) {
 	return uint32(i), err
 }
 
+func (v Value) MustUint32(def ...uint32) uint32 {
+	i, _ := v.Uint32(def...)
+	return i
+}
+
 func (v Value) Uint64(def ...uint64) (uint64, error) {
 	i, err := strconv.ParseUint(string(v), 10, 64)
 	if err != nil || v.IsEmpty() {
@@ -125,6 +170,11 @@ func (v Value) Uint64(def ...uint64) (uint64, error) {
 		}
 	}
 	return i, err
+}
+
+func (v Value) MustUint64(def ...uint64) uint64 {
+	i, _ := v.Uint64(def...)
+	return i
 }
 
 func (v Value) Float32(def ...float32) (float32, error) {
@@ -137,6 +187,11 @@ func (v Value) Float32(def ...float32) (float32, error) {
 	return float32(i), err
 }
 
+func (v Value) MustFloat32(def ...float32) float32 {
+	i, _ := v.Float32(def...)
+	return i
+}
+
 func (v Value) Float64(def ...float64) (float64, error) {
 	i, err := strconv.ParseFloat(string(v), 64)
 	if err != nil || v.IsEmpty() {
@@ -145,6 +200,11 @@ func (v Value) Float64(def ...float64) (float64, error) {
 		}
 	}
 	return i, err
+}
+
+func (v Value) MustFloat64(def ...float64) float64 {
+	i, _ := v.Float64(def...)
+	return i
 }
 
 func (v Value) Bool(def ...bool) (bool, error) {
@@ -158,6 +218,11 @@ func (v Value) Bool(def ...bool) (bool, error) {
 		}
 	}
 	return i, err
+}
+
+func (v Value) MustBool(def ...bool) bool {
+	i, _ := v.Bool(def...)
+	return i
 }
 
 func (v Value) Duration(def ...int64) (time.Duration, error) {
