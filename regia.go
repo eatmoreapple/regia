@@ -5,6 +5,7 @@
 package regia
 
 import (
+	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/validators"
 	"net/http"
 	"sync"
@@ -58,7 +59,10 @@ type Engine struct {
 
 	// HTML Loader
 	HTMLLoader HTMLLoader
-	server     *http.Server
+
+	//
+	Logger logger.Logger
+	server *http.Server
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -193,6 +197,7 @@ func New() *Engine {
 		HTMLLoader:       new(TemplateLoader),
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
+		Logger:        logger.ConsoleLogger(),
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	return engine

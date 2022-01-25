@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/eatmoreapple/regia/binders"
 	"github.com/eatmoreapple/regia/internal"
+	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/renders"
 	"github.com/eatmoreapple/regia/validators"
 	"io"
@@ -47,6 +48,7 @@ type Context struct {
 	Parsers        Parsers
 	Validator      validators.Validator
 	Params         Params
+	Logger         logger.Logger
 	fullPath       string
 }
 
@@ -57,6 +59,7 @@ func (c *Context) init(params Params, group HandleFuncGroup) {
 	c.FileStorage = c.Engine.FileStorage
 	c.MultipartMemory = c.Engine.MultipartMemory
 	c.Validator = c.Engine.ContextValidator
+	c.Logger = c.Engine.Logger
 }
 
 // reset current Context
@@ -69,6 +72,7 @@ func (c *Context) reset() {
 	c.status = 0
 	c.written = false
 	c.abortIndex = 0
+	c.Logger = nil
 }
 
 // start to handle current request
