@@ -48,7 +48,7 @@ func newStdLogger(prefix string) *log.Logger {
 }
 
 func newLogger(writer io.Writer, prefix string) *log.Logger {
-	return log.New(writer, fmt.Sprintf("[%-14s]  ", prefix), log.Ldate|log.Ltime|log.Lshortfile)
+	return log.New(writer, fmt.Sprintf("[%-14s]  ", prefix), log.Ldate|log.Ltime)
 }
 
 func ConsoleLogger() Logger {
