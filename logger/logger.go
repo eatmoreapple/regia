@@ -15,12 +15,20 @@ type Logger interface {
 	Error(v ...interface{})
 }
 
+type sampleLogger struct {
+	*log.Logger
+}
+
+func (s *sampleLogger) Println(a ...interface{}) {
+	s.Output(3, fmt.Sprintln(a...))
+}
+
 type logger struct {
-	trace *log.Logger
-	debug *log.Logger
-	info  *log.Logger
-	warn  *log.Logger
-	error *log.Logger
+	trace *sampleLogger
+	debug *sampleLogger
+	info  *sampleLogger
+	warn  *sampleLogger
+	error *sampleLogger
 }
 
 func (c *logger) Trace(v ...interface{}) {
@@ -43,12 +51,12 @@ func (c *logger) Error(v ...interface{}) {
 	c.error.Println(v...)
 }
 
-func newStdLogger(prefix string) *log.Logger {
+func newStdLogger(prefix string) *sampleLogger {
 	return newLogger(log.Writer(), prefix)
 }
 
-func newLogger(writer io.Writer, prefix string) *log.Logger {
-	return log.New(writer, fmt.Sprintf("[%-14s]  ", prefix), log.Ldate|log.Ltime)
+func newLogger(writer io.Writer, prefix string) *sampleLogger {
+	return &sampleLogger{log.New(writer, fmt.Sprintf("[%-14s]  ", prefix), log.Ldate|log.Ltime|log.Llongfile)}
 }
 
 func ConsoleLogger() Logger {
@@ -60,7 +68,7 @@ func ConsoleLogger() Logger {
 	return NewLogger(trace, debug, info, warn, err)
 }
 
-func NewLogger(trace, debug, info, warn, error *log.Logger) Logger {
+func NewLogger(trace, debug, info, warn, error *sampleLogger) Logger {
 	return &logger{
 		trace: trace,
 		debug: debug,
