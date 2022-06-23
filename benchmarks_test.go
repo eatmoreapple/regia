@@ -18,6 +18,7 @@ func runRequest(B *testing.B, r *Engine, method, path string) {
 	for i := 0; i < B.N; i++ {
 		r.ServeHTTP(w, req)
 	}
+
 }
 
 func BenchmarkOneRoute(B *testing.B) {

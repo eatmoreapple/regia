@@ -239,6 +239,12 @@ func (c *Context) BindXML(v interface{}) error {
 	return c.Bind(binder, v)
 }
 
+// BindHeader bind the request header to destination
+func (c *Context) BindHeader(v interface{}) error {
+	binder := binders.HeaderBinder{}
+	return c.Bind(binder, v)
+}
+
 // GetValue get value from context
 func (c *Context) GetValue(key string) (value interface{}, exist bool) {
 	c.lock.RLock()

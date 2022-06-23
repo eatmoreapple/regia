@@ -210,6 +210,7 @@ func (m *HttpMultipartFormBinder) BindMultipartForm(form *multipart.Form, v inte
 
 var (
 	DefaultFormBinder                              = &UrlFormBinder{TagName: formTag, BindTagName: bindTag}
+	DefaultHeaderBinder                            = &UrlFormBinder{TagName: "header", BindTagName: bindTag}
 	DefaultMultipartFormBinder                     = &HttpMultipartFormBinder{UrlFormBinder: DefaultFormBinder, FieldTag: fileTag}
 	_                          formBinder          = DefaultFormBinder
 	_                          multipartFormBinder = DefaultMultipartFormBinder

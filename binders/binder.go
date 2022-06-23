@@ -57,3 +57,10 @@ type XmlBodyBinder struct {
 func (j XmlBodyBinder) Bind(request *http.Request, v interface{}) error {
 	return j.Serializer.Decode(request.Body, v)
 }
+
+type HeaderBinder struct{}
+
+func (h HeaderBinder) Bind(request *http.Request, v interface{}) error {
+	values := url.Values(request.Header)
+	return DefaultHeaderBinder.BindForm(values, v)
+}
