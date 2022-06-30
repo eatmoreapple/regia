@@ -108,9 +108,12 @@ func (b *BluePrint) Include(prefix string, branch *BluePrint) {
 
 // Bind legal handleFunc with given mappings from struct
 func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]string) {
+	value := reflect.Indirect(reflect.ValueOf(v))
+	if value.Kind() != reflect.Struct {
+		panic("`v` should be a struct")
+	}
 	for _, mapping := range mappings {
 		cleanedMapping := getCleanedRequestMapping(mapping)
-		value := reflect.ValueOf(v)
 		for handleName, methodName := range cleanedMapping {
 			if method := value.MethodByName(handleName); method.IsValid() {
 				if handle, ok := method.Interface().(func(context *Context)); ok {
@@ -125,27 +128,6 @@ func (b *BluePrint) Bind(path string, v interface{}, mappings ...map[string]stri
 func (b *BluePrint) BindMethod(path string, v interface{}, mappings ...map[string]string) {
 	mappings = append(mappings, HttpRequestMethodMapping)
 	b.Bind(path, v, mappings...)
-}
-
-// BindByHandlerName register handler by handler name
-// 		type Handler struct{}
-// 		func(Handler)PostLogin(c *Context) {}
-//		engine.BindByHandlerName("/user/", Handler{})
-func (b *BluePrint) BindByHandlerName(path string, v interface{}) {
-	value := reflect.ValueOf(v)
-	t := reflect.TypeOf(v)
-	for i := 0; i < value.NumMethod(); i++ {
-		method := value.Method(i)
-		methodName := t.Method(i).Name
-		if m, ok := method.Interface().(func(ctx *Context)); ok {
-			for k, v := range HttpRequestMethodMapping {
-				if strings.HasPrefix(methodName, k) {
-					pathName := strings.TrimLeft(methodName, k)
-					b.Handle(v, path+getHandlerPathName(pathName), m)
-				}
-			}
-		}
-	}
 }
 
 // Static Serve static files
