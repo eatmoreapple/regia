@@ -115,7 +115,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context.ResponseWriter = writer
 
 	// try to find all handlers
-	group, params := e.Router.Match(context)
+	group := e.Router.Match(context)
 
 	context.matched = group != nil
 
@@ -134,7 +134,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// initialize context
-	context.init(params, group)
+	context.init(group)
 
 	// start to call all handlers
 	context.start()

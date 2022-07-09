@@ -53,8 +53,7 @@ type Context struct {
 }
 
 // init prepare for this request
-func (c *Context) init(params Params, group HandleFuncGroup) {
-	c.Params = params
+func (c *Context) init(group HandleFuncGroup) {
 	c.group = group
 	c.FileStorage = c.Engine.FileStorage
 	c.MultipartMemory = c.Engine.MultipartMemory
