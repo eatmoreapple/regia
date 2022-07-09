@@ -4,6 +4,8 @@
 
 package regia
 
+import "net/url"
+
 type Param struct {
 	Key   string
 	Value string
@@ -23,4 +25,14 @@ func (ps Params) byName(name string) string {
 func (ps Params) Get(key string) Value {
 	v := ps.byName(key)
 	return Value(v)
+}
+
+// ToURLValues converts a Params to an url.Values
+// This is useful for building a URL query string
+func (ps Params) ToURLValues() url.Values {
+	values := url.Values{}
+	for _, p := range ps {
+		values.Add(p.Key, p.Value)
+	}
+	return values
 }

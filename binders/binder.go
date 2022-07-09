@@ -6,18 +6,9 @@ package binders
 
 import (
 	"github.com/eatmoreapple/regia/internal"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 )
-
-func BindForm(form url.Values, v interface{}) error {
-	return DefaultFormBinder.BindForm(form, v)
-}
-
-func BindMultipartForm(form *multipart.Form, v interface{}) error {
-	return DefaultMultipartFormBinder.BindMultipartForm(form, v)
-}
 
 type Binder interface {
 	Bind(request *http.Request, v interface{}) error
@@ -26,20 +17,23 @@ type Binder interface {
 type QueryBinder struct{}
 
 func (QueryBinder) Bind(request *http.Request, v interface{}) error {
-	query := request.URL.Query()
-	return BindForm(query, v)
+	binder := URLValueBinder{TagName: formTag, BindTagName: bindTag}
+	return binder.BindForm(request.URL.Query(), v)
 }
 
 type FormBinder struct{}
 
 func (FormBinder) Bind(request *http.Request, v interface{}) error {
-	return BindForm(request.Form, v)
+	binder := URLValueBinder{TagName: formTag, BindTagName: bindTag}
+	return binder.BindForm(request.Form, v)
 }
 
 type MultipartFormBodyBinder struct{}
 
 func (MultipartFormBodyBinder) Bind(request *http.Request, v interface{}) error {
-	return BindMultipartForm(request.MultipartForm, v)
+	urlValueBinder := URLValueBinder{TagName: formTag, BindTagName: bindTag}
+	binder := HttpMultipartFormBinder{URLValueBinder: urlValueBinder, FieldTag: fileTag}
+	return binder.BindMultipartForm(request.MultipartForm, v)
 }
 
 type JsonBodyBinder struct {
@@ -62,5 +56,17 @@ type HeaderBinder struct{}
 
 func (h HeaderBinder) Bind(request *http.Request, v interface{}) error {
 	values := url.Values(request.Header)
-	return DefaultHeaderBinder.BindForm(values, v)
+	binder := URLValueBinder{TagName: headerTag, BindTagName: bindTag}
+	return binder.BindForm(values, v)
+}
+
+type URIParamContextKey struct{}
+
+type URIBinder struct {
+	Values url.Values
+}
+
+func (u URIBinder) Bind(request *http.Request, v interface{}) error {
+	binder := URLValueBinder{TagName: uriTag, BindTagName: bindTag}
+	return binder.BindForm(u.Values, v)
 }

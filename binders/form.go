@@ -14,10 +14,12 @@ import (
 )
 
 const (
-	pass    = "-"
-	formTag = "form"
-	bindTag = "bind"
-	fileTag = "file"
+	pass      = "-"
+	formTag   = "form"
+	bindTag   = "bind"
+	fileTag   = "file"
+	headerTag = "header"
+	uriTag    = "uri"
 )
 
 // EmptyMultipartFormError may be used outside
@@ -33,13 +35,13 @@ type multipartFormBinder interface {
 	BindMultipartForm(form *multipart.Form, v interface{}) error
 }
 
-type UrlFormBinder struct {
+type URLValueBinder struct {
 	TagName     string
 	BindTagName string
 	BindMethods map[string]BindMethod
 }
 
-func (f UrlFormBinder) BindForm(form url.Values, v interface{}) error {
+func (f URLValueBinder) BindForm(form url.Values, v interface{}) error {
 	value := reflect.ValueOf(v)
 	if value.Kind() != reflect.Ptr {
 		return errors.New("pointer type required")
@@ -109,7 +111,7 @@ func (f UrlFormBinder) BindForm(form url.Values, v interface{}) error {
 	return nil
 }
 
-func (f *UrlFormBinder) AddBindMethod(name string, method BindMethod) error {
+func (f *URLValueBinder) AddBindMethod(name string, method BindMethod) error {
 	if _, exist := f.BindMethods[name]; exist {
 		return fmt.Errorf("%s already exist", name)
 	}
@@ -121,7 +123,7 @@ func (f *UrlFormBinder) AddBindMethod(name string, method BindMethod) error {
 }
 
 type HttpMultipartFormBinder struct {
-	*UrlFormBinder
+	URLValueBinder
 	FieldTag string
 }
 
@@ -211,11 +213,3 @@ func (m *HttpMultipartFormBinder) BindMultipartForm(form *multipart.Form, v inte
 	}
 	return nil
 }
-
-var (
-	DefaultFormBinder                              = &UrlFormBinder{TagName: formTag, BindTagName: bindTag}
-	DefaultHeaderBinder                            = &UrlFormBinder{TagName: "header", BindTagName: bindTag}
-	DefaultMultipartFormBinder                     = &HttpMultipartFormBinder{UrlFormBinder: DefaultFormBinder, FieldTag: fileTag}
-	_                          formBinder          = DefaultFormBinder
-	_                          multipartFormBinder = DefaultMultipartFormBinder
-)

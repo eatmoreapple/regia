@@ -230,6 +230,13 @@ func (c *Context) BindHeader(v interface{}) error {
 	return c.Bind(binder, v)
 }
 
+// BindURI bind the request uri to destination
+func (c *Context) BindURI(v interface{}) error {
+	values := c.Params.ToURLValues()
+	binder := binders.URIBinder{Values: values}
+	return c.Bind(binder, v)
+}
+
 // GetValue get value from context
 func (c *Context) GetValue(key string) (value interface{}, exist bool) {
 	c.lock.RLock()
