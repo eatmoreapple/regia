@@ -187,14 +187,14 @@ func (e *Engine) SetUp() error {
 // New Constructor for Engine
 func New() *Engine {
 	engine := &Engine{
-		Router:           make(HttpRouter),
+		Router:           HttpRouter{},
 		BluePrint:        NewBluePrint(),
 		NotFoundHandle:   HandleNotFound,
-		Warehouse:        new(SyncMap),
+		Warehouse:        warehouse{},
 		MultipartMemory:  defaultMultipartMemory,
 		FileStorage:      &LocalFileStorage{},
 		ContextValidator: validators.DefaultValidator{},
-		HTMLLoader:       new(TemplateLoader),
+		HTMLLoader:       &TemplateLoader{},
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
 		Logger:        logger.ConsoleLogger(),
@@ -209,3 +209,8 @@ func Default() *Engine {
 	engine.AddStarter(&BannerStarter{Banner: Banner}, &UrlInfoStarter{})
 	return engine
 }
+
+const (
+	author = "多吃点苹果"
+	wechat = "eatmoreapple"
+)
