@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"unicode"
 )
 
 type handleNode struct {
@@ -183,22 +182,4 @@ func getCleanedRequestMapping(mapping map[string]string) map[string]string {
 		cleanedMapping[handleName] = requestMethodUpper
 	}
 	return cleanedMapping
-}
-
-func getHandlerPathName(name string) string {
-	var builder strings.Builder
-	for index, n := range name {
-		if index == 0 {
-			builder.WriteString(strings.ToLower(string(n)))
-			continue
-		}
-		if unicode.IsUpper(n) {
-			builder.WriteString("-")
-			builder.WriteString(strings.ToLower(string(n)))
-			continue
-		} else {
-			builder.WriteRune(n)
-		}
-	}
-	return builder.String()
 }

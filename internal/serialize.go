@@ -30,8 +30,3 @@ func (x XmlSerializer) Encode(writer io.Writer, v interface{}) error {
 func (x XmlSerializer) Decode(reader io.Reader, v interface{}) error {
 	return xml.NewDecoder(reader).Decode(v)
 }
-
-var (
-	JSON Serializer = JsonSerializer{}
-	XML  Serializer = XmlSerializer{}
-)

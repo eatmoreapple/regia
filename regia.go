@@ -5,6 +5,7 @@
 package regia
 
 import (
+	"github.com/eatmoreapple/regia/internal"
 	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/validators"
 	"net/http"
@@ -65,6 +66,14 @@ type Engine struct {
 
 	// http.Server instance
 	server *http.Server
+
+	// JSONSerializer used to serialize json
+	// Your set your own JSONSerializer if you want
+	// Such as jsoniter, json2, etc
+	JSONSerializer internal.Serializer
+
+	// XMLSerializer used to serialize xml
+	XMLSerializer internal.Serializer
 }
 
 func (e *Engine) dispatchContext() *Context {
@@ -194,6 +203,10 @@ func New() *Engine {
 		// Add default parser to make sure that Context could be worked
 		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
 		Logger:        logger.ConsoleLogger(),
+		// Add default serializer to make sure that Context could be worked
+		JSONSerializer: internal.JsonSerializer{},
+		// Add default serializer to make sure that Context could be worked
+		XMLSerializer: internal.XmlSerializer{},
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	return engine

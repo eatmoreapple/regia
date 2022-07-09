@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"github.com/eatmoreapple/regia/binders"
-	"github.com/eatmoreapple/regia/internal"
 	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/renders"
 	"github.com/eatmoreapple/regia/validators"
@@ -228,13 +227,13 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 
 // BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
-	binder := binders.JsonBodyBinder{Serializer: internal.JSON}
+	binder := binders.JsonBodyBinder{Serializer: c.Engine.JSONSerializer}
 	return c.Bind(binder, v)
 }
 
 // BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
-	binder := binders.XmlBodyBinder{Serializer: internal.XML}
+	binder := binders.XmlBodyBinder{Serializer: c.Engine.XMLSerializer}
 	return c.Bind(binder, v)
 }
 
@@ -299,13 +298,13 @@ func (c *Context) Render(render renders.Render, data interface{}) error {
 
 // JSON write json response
 func (c *Context) JSON(data interface{}) error {
-	render := renders.JsonRender{Serializer: internal.JSON}
+	render := renders.JsonRender{Serializer: c.Engine.JSONSerializer}
 	return c.Render(render, data)
 }
 
 // XML write xml response
 func (c *Context) XML(data interface{}) error {
-	render := renders.XmlRender{Serializer: internal.XML}
+	render := renders.XmlRender{Serializer: c.Engine.XMLSerializer}
 	return c.Render(render, data)
 }
 
