@@ -7,24 +7,10 @@ package regia
 import (
 	"io"
 	"mime/multipart"
-	"net/http"
 	"os"
 	"path"
 	"sync"
 )
-
-// GetFileContentType Get File contentType
-// os.File impl multipart.File
-func GetFileContentType(file multipart.File) (string, error) {
-	buffer := make([]byte, 512)
-	if _, err := file.Read(buffer); err != nil {
-		return "", err
-	}
-	if _, err := file.Seek(0, 0); err != nil {
-		return "", err
-	}
-	return http.DetectContentType(buffer), nil
-}
 
 type FileStorage interface {
 	Save(fileHeader *multipart.FileHeader) (string, error)
