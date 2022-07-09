@@ -31,13 +31,13 @@ type Engine struct {
 	// InternalServerErrorHandle replies to the request with an HTTP 500 internal server error.
 	InternalServerErrorHandle func(context *Context, rec interface{})
 
-	// All requests will be intercepted by Interceptors
+	// All requests will be intercepted by interceptors
 	// whatever route matched or not
-	Interceptors HandleFuncGroup
+	interceptors HandleFuncGroup
 
 	// Starter will run when the service starts
 	// it only runs once
-	Starters []Starter
+	starters []Starter
 
 	// Warehouse is used to store information
 	Warehouse Warehouse
@@ -60,8 +60,10 @@ type Engine struct {
 	// HTML Loader
 	HTMLLoader HTMLLoader
 
-	//
+	// Logger used to log
 	Logger logger.Logger
+
+	// http.Server instance
 	server *http.Server
 }
 
@@ -71,34 +73,29 @@ func (e *Engine) dispatchContext() *Context {
 	}
 }
 
-// Start implement Starter and register all handles to router
-func (e *Engine) Start(*Engine) error {
+// AddInterceptors Add interceptor to Engine
+// All interceptors will be called before any handler
+// Such as authorization, rate limiter, etc
+func (e *Engine) AddInterceptors(interceptors ...HandleFunc) {
+	e.interceptors = append(e.interceptors, interceptors...)
+}
+
+// AddStarter Add starter to Engine
+// It will be called when the service starts
+func (e *Engine) AddStarter(starters ...Starter) {
+	e.starters = append(e.starters, starters...)
+}
+
+// init engine
+func (e *Engine) init() error {
+	// prepare router
 	for method, nodes := range e.methodsTree {
 		for _, node := range nodes {
 			e.Router.Insert(method, node.path, node.group)
 		}
 	}
-	return nil
-}
-
-// SetNotFoundHandle Setter for Engine.NotFoundHandle
-func (e *Engine) SetNotFoundHandle(handle HandleFunc) {
-	e.NotFoundHandle = handle
-}
-
-// AddInterceptors Add interceptor to Engine
-func (e *Engine) AddInterceptors(interceptors ...HandleFunc) {
-	e.Interceptors = append(e.Interceptors, interceptors...)
-}
-
-// AddStarter Add starter to Engine
-func (e *Engine) AddStarter(starters ...Starter) {
-	e.Starters = append(e.Starters, starters...)
-}
-
-// Call all starters of this engine
-func (e *Engine) runStarter() error {
-	for _, starter := range e.Starters {
+	// run all starters
+	for _, starter := range e.starters {
 		if err := starter.Start(e); err != nil {
 			return err
 		}
@@ -106,13 +103,7 @@ func (e *Engine) runStarter() error {
 	return nil
 }
 
-// Init engine
-func (e *Engine) init() error {
-	e.AddStarter(e)
-	return e.runStarter()
-}
-
-// Run Start Listen and serve
+// Run is a shortcut for ListenAndServe
 func (e *Engine) Run(addr string) error {
 	return e.ListenAndServe(addr)
 }
@@ -122,20 +113,33 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context := e.pool.Get().(*Context)
 	context.Request = request
 	context.ResponseWriter = writer
+
+	// try to find all handlers
 	group, params := e.Router.Match(context)
-	context.matched = len(group) == 0
-	if group != nil {
-		if len(e.Interceptors) != 0 {
-			group = append(e.Interceptors, group...)
+
+	context.matched = group != nil
+
+	// if matched, then call the handler
+	if context.matched {
+		if len(e.interceptors) != 0 {
+			group = append(e.interceptors, group...)
 		}
 	} else {
+		// route not found
+		// add not found handler
+		// in case of not found handler is not set
+		// then reply with 404
+		// try to set Engine.NotFoundHandle to do your own business
 		group = []HandleFunc{e.NotFoundHandle}
-		if len(e.Interceptors) != 0 {
-			group = append(e.Interceptors, group...)
-		}
 	}
+
+	// initialize context
 	context.init(params, group)
+
+	// start to call all handlers
 	context.start()
+
+	// release context
 	if !context.escape {
 		context.reset()
 		e.pool.Put(context)
@@ -144,23 +148,19 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 // ListenAndServeTLS acts identically to Run
 func (e *Engine) ListenAndServeTLS(addr, certFile, keyFile string) error {
-	err := e.SetUp()
-	if err != nil {
+	if err := e.setup(); err != nil {
 		return err
 	}
 	e.server.Addr = addr
-	err = e.server.ListenAndServeTLS(certFile, keyFile)
-	return err
+	return e.server.ListenAndServeTLS(certFile, keyFile)
 }
 
 func (e *Engine) ListenAndServe(addr string) error {
-	err := e.SetUp()
-	if err != nil {
+	if err := e.setup(); err != nil {
 		return err
 	}
 	e.server.Addr = addr
-	err = e.server.ListenAndServe()
-	return err
+	return e.server.ListenAndServe()
 }
 
 // Server is a getter for Engine
@@ -168,19 +168,15 @@ func (e *Engine) Server() *http.Server {
 	return e.server
 }
 
-func (e *Engine) makeServer() {
-	e.server = e.CloneServer()
-}
-
 func (e *Engine) CloneServer() *http.Server {
 	return &http.Server{Handler: e}
 }
 
-func (e *Engine) SetUp() error {
+func (e *Engine) setup() error {
 	if err := e.init(); err != nil {
 		return err
 	}
-	e.makeServer()
+	e.server = &http.Server{Handler: e}
 	return nil
 }
 
