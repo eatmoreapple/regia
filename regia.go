@@ -24,7 +24,7 @@ type Engine struct {
 	*BluePrint
 
 	// Router is a module used to register handle and distribute request
-	Router Router
+	Router HttpRouter
 
 	// NotFoundHandle replies to the request with an HTTP 404 not found error.
 	NotFoundHandle func(context *Context)
@@ -78,7 +78,10 @@ type Engine struct {
 
 func (e *Engine) dispatchContext() *Context {
 	return &Context{
-		Engine: e,
+		Engine:      e,
+		FileStorage: e.FileStorage,
+		Validator:   e.ContextValidator,
+		Logger:      e.Logger,
 	}
 }
 
@@ -124,14 +127,12 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	context.ResponseWriter = writer
 
 	// try to find all handlers
-	group := e.Router.Match(context)
-
-	context.matched = group != nil
+	context.matched = e.Router.Match(context)
 
 	// if matched, then call the handler
 	if context.matched {
 		if len(e.interceptors) != 0 {
-			group = append(e.interceptors, group...)
+			context.group = append(e.interceptors, context.group...)
 		}
 	} else {
 		// route not found
@@ -139,11 +140,8 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		// in case of not found handler is not set
 		// then reply with 404
 		// try to set Engine.NotFoundHandle to do your own business
-		group = []HandleFunc{e.NotFoundHandle}
+		context.group = []HandleFunc{e.NotFoundHandle}
 	}
-
-	// initialize context
-	context.init(group)
 
 	// start to call all handlers
 	context.start()

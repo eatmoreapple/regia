@@ -30,9 +30,6 @@ type Context struct {
 	abortIndex uint8
 	status     int
 	written    bool
-	// multipart form memory size
-	// default 32M
-	MultipartMemory int64
 	// query cache
 	queryCache url.Values
 	// form cache
@@ -51,15 +48,6 @@ type Context struct {
 	fullPath       string
 }
 
-// init prepare for this request
-func (c *Context) init(group HandleFuncGroup) {
-	c.group = group
-	c.FileStorage = c.Engine.FileStorage
-	c.MultipartMemory = c.Engine.MultipartMemory
-	c.Validator = c.Engine.ContextValidator
-	c.Logger = c.Engine.Logger
-}
-
 // reset current Context
 func (c *Context) reset() {
 	c.index = 0
@@ -70,7 +58,6 @@ func (c *Context) reset() {
 	c.status = 0
 	c.written = false
 	c.abortIndex = 0
-	c.Logger = nil
 }
 
 // start to handle current request
@@ -218,7 +205,7 @@ func (c *Context) BindForm(v interface{}) error {
 
 // BindMultipartForm bind MultipartForm to destination
 func (c *Context) BindMultipartForm(v interface{}) error {
-	if err := c.Request.ParseMultipartForm(c.MultipartMemory); err != nil {
+	if err := c.Request.ParseMultipartForm(c.Engine.MultipartMemory); err != nil {
 		return err
 	}
 	binder := binders.MultipartFormBodyBinder{}
