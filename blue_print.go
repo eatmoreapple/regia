@@ -1,4 +1,4 @@
-// Copyright 2021 eatMoreApple.  All rights reserved.
+// Copyright 2021 eatmoreapple.  All rights reserved.
 // Use of this source code is governed by a GPL style
 // license that can be found in the LICENSE file.
 
@@ -137,8 +137,12 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 	}
 	server := http.FileServer(http.Dir(dir))
 	handle := func(context *Context) {
+		// get file path from url
 		path := context.Params.Get(FilePathParam).Text()
+		// reset file path to URL
 		context.Request.URL.Path = path
+
+		// if file exists, serve it
 		p := filepath.Join(dir, path)
 		if _, err := os.Stat(p); err != nil {
 			context.matched = false
@@ -147,6 +151,8 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 			return
 		}
 		ext := filepath.Ext(path)
+
+		// try to serve file with correct content type
 		cnt := mime.TypeByExtension(ext)
 		if len(cnt) == 0 {
 			cnt = "application/octet-stream"

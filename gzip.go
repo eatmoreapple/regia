@@ -1,3 +1,7 @@
+// Copyright 2022 eatmoreapple.  All rights reserved.
+// Use of this source code is governed by a GPL style
+// license that can be found in the LICENSE file.
+
 package regia
 
 import (
@@ -11,10 +15,14 @@ type gzipWriter struct {
 	gzipWriter *gzip.Writer
 }
 
+// Write writes to the underlying gzip writer
 func (w *gzipWriter) Write(b []byte) (int, error) {
 	return w.gzipWriter.Write(b)
 }
 
+// Gzip is a middleware for gzip compression
+// it will compress the response body if the client accepts gzip encoding
+// param is the compression level, choose from gzip.BestSpeed to gzip.BestCompression
 func Gzip(level int) HandleFunc {
 	return func(c *Context) {
 		// Check if the client can accept gzip compression
