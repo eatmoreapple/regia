@@ -5,6 +5,9 @@
 package regia
 
 import (
+	"github.com/eatmoreapple/regia/internal"
+	"github.com/eatmoreapple/regia/logger"
+	"github.com/eatmoreapple/regia/validators"
 	"mime"
 	"net/http"
 	"os"
@@ -14,11 +17,32 @@ import (
 )
 
 type handleNode struct {
-	path  string
-	group HandleFuncGroup
+	path      string
+	group     HandleFuncGroup
+	blueprint *BluePrint
 }
 
 type BluePrint struct {
+	// Name the name of current BluePrint
+	Name string
+
+	// request handler
+
+	// FileStorage is a storage for file
+	fileStorage FileStorage
+	parsers     Parsers
+	validator   validators.Validator
+	logger      logger.Logger
+
+	// response render
+	htmlLoader    HTMLLoader
+	xmlSerializer internal.Serializer
+	// JSONSerializer used to serialize json
+	// Your set your own JSONSerializer if you want
+	// Such as jsoniter, json2, etc
+	jsonSerializer internal.Serializer
+
+	parent      *BluePrint
 	methodsTree map[string][]*handleNode
 	middleware  HandleFuncGroup
 	prefix      string
@@ -82,7 +106,12 @@ func (b *BluePrint) RAW(method, path string, handlers ...http.HandlerFunc) {
 func (b *BluePrint) Handle(method, path string, group ...HandleFunc) {
 	group = append(b.middleware, group...)
 	path = b.prefix + path
-	n := &handleNode{path: path, group: group}
+	n := &handleNode{path: path, group: group, blueprint: b}
+	b.register(method, n)
+}
+
+// Register register handleNode with given method
+func (b *BluePrint) register(method string, node *handleNode) {
 	if b.methodsTree == nil {
 		b.methodsTree = make(map[string][]*handleNode)
 	}
@@ -92,15 +121,18 @@ func (b *BluePrint) Handle(method, path string, group ...HandleFunc) {
 	}
 	for _, m := range methods {
 		m = strings.ToUpper(m)
-		b.methodsTree[m] = append(b.methodsTree[m], n)
+		b.methodsTree[m] = append(b.methodsTree[m], node)
 	}
 }
 
 // Include can add another BluePrint
 func (b *BluePrint) Include(prefix string, branch *BluePrint) {
+	// set parent
+	branch.parent = b
 	for method, nodes := range branch.methodsTree {
 		for _, node := range nodes {
-			b.Handle(method, prefix+node.path, node.group...)
+			hn := &handleNode{path: prefix + node.path, group: node.group, blueprint: branch}
+			b.register(method, hn)
 		}
 	}
 }
@@ -170,8 +202,186 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 	b.Handle(http.MethodGet, url, group...)
 }
 
+// Parent returns parent BluePrint
+func (b *BluePrint) Parent() *BluePrint {
+	return b.parent
+}
+
+// IsRoot returns true if this is root BluePrint
+func (b *BluePrint) IsRoot() bool {
+	return b.Parent() == nil
+}
+
+//*************************
+//*** Getter And Setter ***
+//*************************
+
+// XMLSerializer returns XMLSerializer
+// If not set, it will try to get from parent BluePrint
+func (b *BluePrint) XMLSerializer() internal.Serializer {
+	if b.xmlSerializer != nil {
+		return b.xmlSerializer
+	}
+	if !b.IsRoot() {
+		return b.Parent().XMLSerializer()
+	}
+	return nil
+}
+
+// SetXMLSerializer set XMLSerializer
+// If is nil, it will be panic
+func (b *BluePrint) SetXMLSerializer(xmlSerializer internal.Serializer) {
+	if xmlSerializer == nil {
+		panic("xmlSerializer can not be nil")
+	}
+	b.xmlSerializer = xmlSerializer
+}
+
+// JSONSerializer returns JSONSerializer
+// If not set, it will try to get from parent BluePrint
+func (b *BluePrint) JSONSerializer() internal.Serializer {
+	if b.jsonSerializer != nil {
+		return b.jsonSerializer
+	}
+	if !b.IsRoot() {
+		return b.Parent().JSONSerializer()
+	}
+	return nil
+}
+
+// SetJSONSerializer set JSONSerializer
+// If is nil, it will be panic
+func (b *BluePrint) SetJSONSerializer(jsonSerializer internal.Serializer) {
+	if jsonSerializer == nil {
+		panic("jsonSerializer can not be nil")
+	}
+	b.jsonSerializer = jsonSerializer
+}
+
+// HTMLLoader HTMLSerializer returns HTMLLoader
+// If not set, it will try to get from parent BluePrint
+func (b *BluePrint) HTMLLoader() HTMLLoader {
+	if b.htmlLoader != nil {
+		return b.htmlLoader
+	}
+	if !b.IsRoot() {
+		return b.Parent().HTMLLoader()
+	}
+	return nil
+}
+
+// SetHTMLLoader set HTMLLoader
+// If is nil, it will be panic
+func (b *BluePrint) SetHTMLLoader(htmlLoader HTMLLoader) {
+	if htmlLoader == nil {
+		panic("htmlLoader can not be nil")
+	}
+	b.htmlLoader = htmlLoader
+}
+
+// FileStorage set FileStorage
+// If is nil, it will be panic
+func (b *BluePrint) FileStorage() FileStorage {
+	if b.fileStorage != nil {
+		return b.fileStorage
+	}
+	if !b.IsRoot() {
+		return b.Parent().FileStorage()
+	}
+	return nil
+}
+
+// SetFileStorage set FileStorage
+// If is nil, it will be panic
+func (b *BluePrint) SetFileStorage(fileStorage FileStorage) {
+	if fileStorage == nil {
+		panic("fileStorage can not be nil")
+	}
+	b.fileStorage = fileStorage
+}
+
+// Parsers returns Parsers
+func (b *BluePrint) Parsers() Parsers {
+	if b.parsers != nil {
+		return b.parsers
+	}
+	if !b.IsRoot() {
+		return b.Parent().Parsers()
+	}
+	return nil
+}
+
+// SetParsers set Parsers
+// If is nil, it will be panic
+func (b *BluePrint) SetParsers(parsers Parsers) {
+	if parsers == nil {
+		panic("parsers can not be nil")
+	}
+	b.parsers = parsers
+}
+
+// Validator returns Validator
+// If not set, it will try to get from parent BluePrint
+func (b *BluePrint) Validator() validators.Validator {
+	if b.validator != nil {
+		return b.validator
+	}
+	if !b.IsRoot() {
+		return b.Parent().Validator()
+	}
+	return nil
+}
+
+// SetValidator set Validator
+// If is nil, it will be panic
+func (b *BluePrint) SetValidator(validator validators.Validator) {
+	if validator == nil {
+		panic("validator can not be nil")
+	}
+	b.validator = validator
+}
+
+// Logger returns Logger
+// If not set, it will try to get from parent BluePrint
+func (b *BluePrint) Logger() logger.Logger {
+	if b.logger != nil {
+		return b.logger
+	}
+	if !b.IsRoot() {
+		return b.Parent().Logger()
+	}
+	return nil
+}
+
+// SetLogger set Logger
+// If is nil, it will be panic
+func (b *BluePrint) SetLogger(logger logger.Logger) {
+	if logger == nil {
+		panic("logger can not be nil")
+	}
+	b.logger = logger
+}
+
+// NewBluePrint constructor for BluePrint
 func NewBluePrint() *BluePrint {
 	return &BluePrint{}
+}
+
+// DefaultBluePrint returns default BluePrint
+// It is used to create root BluePrint
+// If you want to create child BluePrint, you should use NewBluePrint
+// DefaultBluePrint add some default attributes to BluePrint
+// Ensure that system could be worked
+func DefaultBluePrint() *BluePrint {
+	bp := NewBluePrint()
+	bp.SetFileStorage(&LocalFileStorage{})
+	bp.SetValidator(&validators.DefaultValidator{})
+	bp.SetParsers(Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}})
+	bp.SetHTMLLoader(&TemplateLoader{})
+	bp.SetLogger(logger.ConsoleLogger())
+	bp.SetJSONSerializer(internal.JsonSerializer{})
+	bp.SetXMLSerializer(internal.XmlSerializer{})
+	return bp
 }
 
 func getCleanedRequestMapping(mapping map[string]string) map[string]string {

@@ -10,7 +10,6 @@ import (
 	"github.com/eatmoreapple/regia/binders"
 	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/renders"
-	"github.com/eatmoreapple/regia/validators"
 	"io"
 	"net/http"
 	"net/url"
@@ -36,22 +35,17 @@ type Context struct {
 	formCache      url.Values
 	items          map[string]interface{}
 	lock           sync.RWMutex
-	group          HandleFuncGroup
+	group          handleFuncNodeGroup
 	Request        *http.Request
 	ResponseWriter http.ResponseWriter
 	Engine         *Engine
-	FileStorage    FileStorage
-	Parsers        Parsers
-	Validator      validators.Validator
 	Params         Params
-	Logger         logger.Logger
 	fullPath       string
 }
 
 // reset current Context
 func (c *Context) reset() {
 	c.index = 0
-	c.Parsers = nil
 	c.matched = false
 	c.queryCache = nil
 	c.formCache = nil
@@ -83,7 +77,7 @@ func (c *Context) Next() {
 	c.index++
 	for c.index <= uint8(len(c.group)) && !c.IsAborted() {
 		handle := c.group[c.index-1]
-		handle(c)
+		handle.HandleFunc(c)
 		c.index++
 	}
 }
@@ -94,7 +88,8 @@ func (c *Context) Flusher() http.Flusher { return c.ResponseWriter.(http.Flusher
 // SaveUploadFile will call Context.FileStorage
 // default save file to local path
 func (c *Context) SaveUploadFile(name string) (string, error) {
-	return c.SaveUploadFileWith(c.FileStorage, name)
+	fs := c.BluePrint().FileStorage()
+	return c.SaveUploadFileWith(fs, name)
 }
 
 // SaveUploadFileWith call given FileStorage with upload file
@@ -116,18 +111,10 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) (string, error
 // Data analysis request body to destination and validate
 // Call Context.AddParser to add more support
 func (c *Context) Data(v interface{}) error {
-	if c.Parsers == nil {
-		c.Parsers = c.Engine.ContextParser
-	}
-	if err := c.Parsers.Parse(c, v); err != nil {
+	if err := c.BluePrint().Parsers().Parse(c, v); err != nil {
 		return err
 	}
-	return c.Validator.Validate(v)
-}
-
-// AddParser add more Parser for Context.Data
-func (c *Context) AddParser(p ...Parser) {
-	c.Parsers = append(c.Parsers, p...)
+	return c.BluePrint().Validator().Validate(v)
 }
 
 // Query is a shortcut for c.Request.URL.Query()
@@ -214,13 +201,15 @@ func (c *Context) BindMultipartForm(v interface{}) error {
 
 // BindJSON bind the request body according to the format of json
 func (c *Context) BindJSON(v interface{}) error {
-	binder := binders.JsonBodyBinder{Serializer: c.Engine.JSONSerializer}
+	serializer := c.BluePrint().JSONSerializer()
+	binder := binders.JsonBodyBinder{Serializer: serializer}
 	return c.Bind(binder, v)
 }
 
 // BindXML bind the request body according to the format of xml
 func (c *Context) BindXML(v interface{}) error {
-	binder := binders.XmlBodyBinder{Serializer: c.Engine.XMLSerializer}
+	serializer := c.BluePrint().XMLSerializer()
+	binder := binders.XmlBodyBinder{Serializer: serializer}
 	return c.Bind(binder, v)
 }
 
@@ -292,13 +281,15 @@ func (c *Context) Render(render renders.Render, data interface{}) error {
 
 // JSON write json response
 func (c *Context) JSON(data interface{}) error {
-	render := renders.JsonRender{Serializer: c.Engine.JSONSerializer}
+	serializer := c.BluePrint().JSONSerializer()
+	render := renders.JsonRender{Serializer: serializer}
 	return c.Render(render, data)
 }
 
 // XML write xml response
 func (c *Context) XML(data interface{}) error {
-	render := renders.XmlRender{Serializer: c.Engine.XMLSerializer}
+	serializer := c.BluePrint().XMLSerializer()
+	render := renders.XmlRender{Serializer: serializer}
 	return c.Render(render, data)
 }
 
@@ -310,7 +301,7 @@ func (c *Context) String(format string, data ...interface{}) (err error) {
 
 // HTML write html response
 func (c *Context) HTML(name string, data interface{}) error {
-	render, err := c.Engine.HTMLLoader.Load(name)
+	render, err := c.BluePrint().HTMLLoader().Load(name)
 	if err != nil {
 		return err
 	}
@@ -369,7 +360,7 @@ func (c *Context) AbortHandler() HandleFunc {
 	if !c.IsAborted() {
 		return nil
 	}
-	return c.group[c.abortIndex]
+	return c.group[c.abortIndex].HandleFunc
 }
 
 // AbortWithJSON write json response and exit
@@ -405,6 +396,15 @@ func (c *Context) IsWebsocket() bool {
 // IsAjax check current if is an ajax request
 func (c *Context) IsAjax() bool {
 	return strings.EqualFold(c.Request.Header.Get("X-Requested-With"), "XMLHttpRequest")
+}
+
+// BluePrint return current blueprint
+func (c *Context) BluePrint() *BluePrint {
+	return c.group[c.index-1].BluePrint
+}
+
+func (c *Context) Logger() logger.Logger {
+	return c.BluePrint().Logger()
 }
 
 type contextKey struct{}

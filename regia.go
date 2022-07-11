@@ -5,9 +5,6 @@
 package regia
 
 import (
-	"github.com/eatmoreapple/regia/internal"
-	"github.com/eatmoreapple/regia/logger"
-	"github.com/eatmoreapple/regia/validators"
 	"net/http"
 	"sync"
 )
@@ -34,7 +31,7 @@ type Engine struct {
 
 	// All requests will be intercepted by interceptors
 	// whatever route matched or not
-	interceptors HandleFuncGroup
+	interceptors handleFuncNodeGroup
 
 	// Starter will run when the service starts
 	// it only runs once
@@ -49,39 +46,13 @@ type Engine struct {
 	// Context pool
 	pool sync.Pool
 
-	// global Context FileStorage
-	FileStorage FileStorage
-
-	// global Context ContextValidator
-	ContextValidator validators.Validator
-
-	// global ContextParser
-	ContextParser Parsers
-
-	// HTML Loader
-	HTMLLoader HTMLLoader
-
-	// Logger used to log
-	Logger logger.Logger
-
 	// http.Server instance
 	server *http.Server
-
-	// JSONSerializer used to serialize json
-	// Your set your own JSONSerializer if you want
-	// Such as jsoniter, json2, etc
-	JSONSerializer internal.Serializer
-
-	// XMLSerializer used to serialize xml
-	XMLSerializer internal.Serializer
 }
 
 func (e *Engine) dispatchContext() *Context {
 	return &Context{
-		Engine:      e,
-		FileStorage: e.FileStorage,
-		Validator:   e.ContextValidator,
-		Logger:      e.Logger,
+		Engine: e,
 	}
 }
 
@@ -89,7 +60,11 @@ func (e *Engine) dispatchContext() *Context {
 // All interceptors will be called before any handler
 // Such as authorization, rate limiter, etc
 func (e *Engine) AddInterceptors(interceptors ...HandleFunc) {
-	e.interceptors = append(e.interceptors, interceptors...)
+	groups := make(handleFuncNodeGroup, len(interceptors))
+	for _, interceptor := range interceptors {
+		groups = append(groups, &handleFuncNode{HandleFunc: interceptor, BluePrint: e.BluePrint})
+	}
+	e.interceptors = append(e.interceptors, groups...)
 }
 
 // AddStarter Add starter to Engine
@@ -103,7 +78,13 @@ func (e *Engine) init() error {
 	// prepare router
 	for method, nodes := range e.methodsTree {
 		for _, node := range nodes {
-			e.Router.Insert(method, node.path, node.group)
+			hg := handleFuncNodeGroup{}
+			groups := append(e.middleware, node.group...)
+			for _, group := range groups {
+				ns := handleFuncNode{HandleFunc: group, BluePrint: node.blueprint}
+				hg = append(hg, &ns)
+			}
+			e.Router.Insert(method, node.path, hg)
 		}
 	}
 	// run all starters
@@ -140,7 +121,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		// in case of not found handler is not set
 		// then reply with 404
 		// try to set Engine.NotFoundHandle to do your own business
-		context.group = []HandleFunc{e.NotFoundHandle}
+		context.group = handleFuncNodeGroup{&handleFuncNode{HandleFunc: e.NotFoundHandle, BluePrint: e.BluePrint}}
 	}
 
 	// start to call all handlers
@@ -190,21 +171,11 @@ func (e *Engine) setup() error {
 // New Constructor for Engine
 func New() *Engine {
 	engine := &Engine{
-		Router:           HttpRouter{},
-		BluePrint:        NewBluePrint(),
-		NotFoundHandle:   HandleNotFound,
-		Warehouse:        warehouse{},
-		MultipartMemory:  defaultMultipartMemory,
-		FileStorage:      &LocalFileStorage{},
-		ContextValidator: validators.DefaultValidator{},
-		HTMLLoader:       &TemplateLoader{},
-		// Add default parser to make sure that Context could be worked
-		ContextParser: Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}},
-		Logger:        logger.ConsoleLogger(),
-		// Add default serializer to make sure that Context could be worked
-		JSONSerializer: internal.JsonSerializer{},
-		// Add default serializer to make sure that Context could be worked
-		XMLSerializer: internal.XmlSerializer{},
+		Router:          HttpRouter{},
+		BluePrint:       DefaultBluePrint(),
+		NotFoundHandle:  HandleNotFound,
+		Warehouse:       warehouse{},
+		MultipartMemory: defaultMultipartMemory,
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}
 	return engine

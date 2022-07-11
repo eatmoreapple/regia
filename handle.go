@@ -12,6 +12,13 @@ type HandleFunc func(context *Context)
 
 type HandleFuncGroup []HandleFunc
 
+type handleFuncNode struct {
+	HandleFunc HandleFunc
+	BluePrint  *BluePrint
+}
+
+type handleFuncNodeGroup []*handleFuncNode
+
 func HandleNotFound(context *Context) { http.NotFound(context.ResponseWriter, context.Request) }
 
 func RawHandlerFunc(handler http.HandlerFunc) HandleFunc {

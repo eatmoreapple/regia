@@ -7,7 +7,7 @@ package regia
 // HttpRouter implement Router
 type HttpRouter map[string]*routerNode
 
-func (r HttpRouter) Insert(method, path string, handle HandleFuncGroup) {
+func (r HttpRouter) Insert(method, path string, handle handleFuncNodeGroup) {
 
 	if len(path) < 1 || path[0] != '/' {
 		panic("path must begin with '/' in path '" + path + "'")
