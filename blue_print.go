@@ -26,7 +26,8 @@ type BluePrint struct {
 	// Name the name of current BluePrint
 	Name string
 
-	// request handler
+	// data of current BluePrint
+	Data interface{}
 
 	// FileStorage is a storage for file
 	fileStorage FileStorage
