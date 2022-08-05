@@ -11,6 +11,7 @@ import (
 	"github.com/eatmoreapple/regia/logger"
 	"github.com/eatmoreapple/regia/renders"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -433,4 +434,13 @@ func SetContextIntoRequest(ctx *Context) {
 func GetCurrentContext(req *http.Request) *Context {
 	p, _ := req.Context().Value(ContextKey).(*Context)
 	return p
+}
+
+// RemoteIP return remote ip address
+func (c *Context) RemoteIP() string {
+	ip, _, err := net.SplitHostPort(strings.TrimSpace(c.Request.RemoteAddr))
+	if err != nil {
+		return ""
+	}
+	return ip
 }
