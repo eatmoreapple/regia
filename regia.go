@@ -26,9 +26,6 @@ type Engine struct {
 	// NotFoundHandle replies to the request with an HTTP 404 not found error.
 	NotFoundHandle func(context *Context)
 
-	// InternalServerErrorHandle replies to the request with an HTTP 500 internal server error.
-	InternalServerErrorHandle func(context *Context, rec interface{})
-
 	// All requests will be intercepted by interceptors
 	// whatever route matched or not
 	interceptors handleFuncNodeGroup
