@@ -7,9 +7,6 @@ package regia
 import (
 	"context"
 	"errors"
-	"github.com/eatmoreapple/regia/binders"
-	"github.com/eatmoreapple/regia/logger"
-	"github.com/eatmoreapple/regia/renders"
 	"io"
 	"net"
 	"net/http"
@@ -17,6 +14,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/eatmoreapple/regia/binders"
+	"github.com/eatmoreapple/regia/renders"
 )
 
 const defaultMultipartMemory = 32 << 20
@@ -36,12 +36,12 @@ type Context struct {
 	formCache      url.Values
 	items          map[string]interface{}
 	lock           sync.RWMutex
+	engine         *Engine
 	group          handleFuncNodeGroup
+	params         Params
+	fullPath       string
 	Request        *http.Request
 	ResponseWriter http.ResponseWriter
-	Engine         *Engine
-	Params         Params
-	fullPath       string
 }
 
 // reset current Context
@@ -111,11 +111,11 @@ func (c *Context) SaveUploadFileWith(fs FileStorage, name string) (string, error
 
 // Data analysis request body to destination and validate
 // Call Context.AddParser to add more support
-func (c *Context) Data(v interface{}) error {
-	if err := c.BluePrint().Parsers().Parse(c, v); err != nil {
-		return err
+func (c *Context) Data(v interface{}) (err error) {
+	if h, ok := v.(interface{ WithContext(*Context) error }); ok {
+		return h.WithContext(c)
 	}
-	return c.BluePrint().Validator().Validate(v)
+	return c.BluePrint().Parsers().Parse(c, v)
 }
 
 // Query is a shortcut for c.Request.URL.Query()
@@ -193,7 +193,7 @@ func (c *Context) BindForm(v interface{}) error {
 
 // BindMultipartForm bind MultipartForm to destination
 func (c *Context) BindMultipartForm(v interface{}) error {
-	if err := c.Request.ParseMultipartForm(c.Engine.MultipartMemory); err != nil {
+	if err := c.Request.ParseMultipartForm(c.engine.MultipartMemory); err != nil {
 		return err
 	}
 	binder := binders.MultipartFormBodyBinder{}
@@ -222,7 +222,7 @@ func (c *Context) BindHeader(v interface{}) error {
 
 // BindURI bind the request uri to destination
 func (c *Context) BindURI(v interface{}) error {
-	values := c.Params.ToURLValues()
+	values := c.params.ToURLValues()
 	binder := binders.URIBinder{Values: values}
 	return c.Bind(binder, v)
 }
@@ -404,10 +404,6 @@ func (c *Context) BluePrint() *BluePrint {
 	return c.group[c.index-1].BluePrint
 }
 
-func (c *Context) Logger() logger.Logger {
-	return c.BluePrint().Logger()
-}
-
 type contextKey struct{}
 
 type contextExistKey struct{}
@@ -443,4 +439,13 @@ func (c *Context) RemoteIP() string {
 		return ""
 	}
 	return ip
+}
+
+// Engine return Engine of current Context
+func (c *Context) Engine() *Engine {
+	return c.engine
+}
+
+func (c *Context) Params() Params {
+	return c.params
 }

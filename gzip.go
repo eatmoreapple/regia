@@ -31,7 +31,6 @@ func Gzip(level int) HandleFunc {
 		}
 		writer, err := gzip.NewWriterLevel(c.ResponseWriter, level)
 		if err != nil {
-			c.Logger().Error(err)
 			return
 		}
 
@@ -44,7 +43,7 @@ func Gzip(level int) HandleFunc {
 		defer func() {
 			c.SetHeader("Content-Length", "0")
 			if err = writer.Close(); err != nil {
-				c.Logger().Error(err)
+				return
 			}
 		}()
 		c.Next()

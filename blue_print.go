@@ -5,15 +5,14 @@
 package regia
 
 import (
-	"github.com/eatmoreapple/regia/internal"
-	"github.com/eatmoreapple/regia/logger"
-	"github.com/eatmoreapple/regia/validators"
 	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/eatmoreapple/regia/internal"
 )
 
 type handleNode struct {
@@ -32,8 +31,6 @@ type BluePrint struct {
 	// FileStorage is a storage for file
 	fileStorage FileStorage
 	parsers     Parsers
-	validator   validators.Validator
-	logger      logger.Logger
 
 	// response render
 	htmlLoader    HTMLLoader
@@ -171,7 +168,7 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 	server := http.FileServer(http.Dir(dir))
 	handle := func(context *Context) {
 		// get file path from url
-		path := context.Params.Get(FilePathParam).Text()
+		path := context.params.Get(FilePathParam).Text()
 		// reset file path to URL
 		context.Request.URL.Path = path
 
@@ -179,7 +176,7 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 		p := filepath.Join(dir, path)
 		if _, err := os.Stat(p); err != nil {
 			context.matched = false
-			context.Engine.NotFoundHandle(context)
+			context.engine.NotFoundHandle(context)
 			context.Abort()
 			return
 		}
@@ -321,48 +318,6 @@ func (b *BluePrint) SetParsers(parsers Parsers) {
 	b.parsers = parsers
 }
 
-// Validator returns Validator
-// If not set, it will try to get from parent BluePrint
-func (b *BluePrint) Validator() validators.Validator {
-	if b.validator != nil {
-		return b.validator
-	}
-	if !b.IsRoot() {
-		return b.Parent().Validator()
-	}
-	return nil
-}
-
-// SetValidator set Validator
-// If is nil, it will be panic
-func (b *BluePrint) SetValidator(validator validators.Validator) {
-	if validator == nil {
-		panic("validator can not be nil")
-	}
-	b.validator = validator
-}
-
-// Logger returns Logger
-// If not set, it will try to get from parent BluePrint
-func (b *BluePrint) Logger() logger.Logger {
-	if b.logger != nil {
-		return b.logger
-	}
-	if !b.IsRoot() {
-		return b.Parent().Logger()
-	}
-	return nil
-}
-
-// SetLogger set Logger
-// If is nil, it will be panic
-func (b *BluePrint) SetLogger(logger logger.Logger) {
-	if logger == nil {
-		panic("logger can not be nil")
-	}
-	b.logger = logger
-}
-
 // NewBluePrint constructor for BluePrint
 func NewBluePrint() *BluePrint {
 	return &BluePrint{}
@@ -376,10 +331,8 @@ func NewBluePrint() *BluePrint {
 func DefaultBluePrint() *BluePrint {
 	bp := NewBluePrint()
 	bp.SetFileStorage(&LocalFileStorage{})
-	bp.SetValidator(&validators.DefaultValidator{})
 	bp.SetParsers(Parsers{JsonParser{}, FormParser{}, MultipartFormParser{}, XMLParser{}})
 	bp.SetHTMLLoader(&TemplateLoader{})
-	bp.SetLogger(logger.ConsoleLogger())
 	bp.SetJSONSerializer(internal.JsonSerializer{})
 	bp.SetXMLSerializer(internal.XmlSerializer{})
 	return bp

@@ -27,7 +27,7 @@ func (r HttpRouter) Match(ctx *Context) bool {
 	if root := r[method]; root != nil {
 		group, params, _ := root.getValue(ctx.Request.URL.Path)
 		ctx.fullPath = root.fullPath
-		ctx.Params = params
+		ctx.params = params
 		ctx.group = group
 		return group != nil
 	}

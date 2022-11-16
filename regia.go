@@ -49,7 +49,7 @@ type Engine struct {
 
 func (e *Engine) dispatchContext() *Context {
 	return &Context{
-		Engine: e,
+		engine: e,
 	}
 }
 
@@ -117,7 +117,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		// add not found handler
 		// in case of not found handler is not set
 		// then reply with 404
-		// try to set Engine.NotFoundHandle to do your own business
+		// try to set engine.NotFoundHandle to do your own business
 		context.group = handleFuncNodeGroup{&handleFuncNode{HandleFunc: e.NotFoundHandle, BluePrint: e.BluePrint}}
 	}
 
@@ -151,10 +151,6 @@ func (e *Engine) ListenAndServe(addr string) error {
 // Server is a getter for Engine
 func (e *Engine) Server() *http.Server {
 	return e.server
-}
-
-func (e *Engine) CloneServer() *http.Server {
-	return &http.Server{Handler: e}
 }
 
 func (e *Engine) setup() error {
