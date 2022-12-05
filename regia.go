@@ -34,9 +34,6 @@ type Engine struct {
 	// it only runs once
 	starters []Starter
 
-	// Warehouse is used to store information
-	Warehouse Warehouse
-
 	// MultipartMemory defined max request body size
 	MultipartMemory int64
 
@@ -167,7 +164,6 @@ func New() *Engine {
 		Router:          HttpRouter{},
 		BluePrint:       DefaultBluePrint(),
 		NotFoundHandle:  HandleNotFound,
-		Warehouse:       warehouse{},
 		MultipartMemory: defaultMultipartMemory,
 	}
 	engine.pool = sync.Pool{New: func() interface{} { return engine.dispatchContext() }}

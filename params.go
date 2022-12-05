@@ -22,9 +22,8 @@ func (ps Params) byName(name string) string {
 	return ""
 }
 
-func (ps Params) Get(key string) Value {
-	v := ps.byName(key)
-	return Value(v)
+func (ps Params) Get(key string) string {
+	return ps.byName(key)
 }
 
 // ToURLValues converts a Params to an url.Values

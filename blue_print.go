@@ -168,7 +168,7 @@ func (b *BluePrint) Static(url, dir string, group ...HandleFunc) {
 	server := http.FileServer(http.Dir(dir))
 	handle := func(context *Context) {
 		// get file path from url
-		path := context.params.Get(FilePathParam).Text()
+		path := context.params.Get(FilePathParam)
 		// reset file path to URL
 		context.Request.URL.Path = path
 

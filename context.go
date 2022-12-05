@@ -128,15 +128,13 @@ func (c *Context) Query() url.Values {
 }
 
 // QueryValue get Value from url query
-func (c *Context) QueryValue(key string) Value {
-	value := c.Query().Get(key)
-	return Value(value)
+func (c *Context) QueryValue(key string) string {
+	return c.Query().Get(key)
 }
 
 // QueryValues get Value slice from url query
-func (c *Context) QueryValues(key string) Values {
-	values := c.Query()[key]
-	return NewValues(values)
+func (c *Context) QueryValues(key string) []string {
+	return c.Query()[key]
 }
 
 // Form is a shortcut for c.Request.PostForm
@@ -150,15 +148,13 @@ func (c *Context) Form() url.Values {
 }
 
 // FormValue get Value from post value
-func (c *Context) FormValue(key string) Value {
-	value := c.Form().Get(key)
-	return Value(value)
+func (c *Context) FormValue(key string) string {
+	return c.Form().Get(key)
 }
 
 // FormValues get Values slice from post value
-func (c *Context) FormValues(key string) Values {
-	value := c.Form()[key]
-	return NewValues(value)
+func (c *Context) FormValues(key string) []string {
+	return c.Form()[key]
 }
 
 // FullPath return full path of current request
