@@ -37,34 +37,21 @@ func (l *LocalFileStorage) Save(fileHeader *multipart.FileHeader) (string, error
 	}
 	defer src.Close()
 
-	// check path if exists
-	if len(l.MediaRoot) > 0 {
-		_, err = os.Stat(l.MediaRoot)
-		if err != nil {
-			if os.IsNotExist(err) {
-				if err = os.Mkdir(l.MediaRoot, 0666); err != nil {
-					return "", err
-				}
-			} else {
-				return "", err
-			}
-		}
-	}
-
 	dst, err := l.getAlternativeName(fileHeader.Filename)
 	if err != nil {
 		return "", err
 	}
-	l.lock.Lock()
-	defer l.lock.Unlock()
-	out, err := os.Create(dst)
+	dstFile, err := os.Create(dst)
 	if err != nil {
 		return "", err
 	}
-	defer out.Close()
+	defer dstFile.Close()
 
-	_, err = io.Copy(out, src)
-	return dst, err
+	_, err = io.Copy(dstFile, src)
+	if err != nil {
+		return "", err
+	}
+	return dst, nil
 }
 
 // Return an alternative filename, by adding an underscore and a random 7
