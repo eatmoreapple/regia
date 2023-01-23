@@ -12,6 +12,8 @@ type RedirectRender struct {
 	Request     *http.Request
 }
 
+func (r RedirectRender) WriterHeader(_ http.ResponseWriter, _ int) {}
+
 func (r RedirectRender) Render(writer http.ResponseWriter, data interface{}) error {
 	if r.Code == 0 {
 		r.Code = http.StatusFound

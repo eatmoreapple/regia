@@ -17,7 +17,11 @@ type ContentRender struct {
 	Content io.ReadSeeker
 }
 
-func (c ContentRender) Render(writer http.ResponseWriter, data interface{}) error {
+func (c ContentRender) WriterHeader(writer http.ResponseWriter, code int) {
+	writeHeader(writer, code)
+}
+
+func (c ContentRender) Render(writer http.ResponseWriter, _ interface{}) error {
 	http.ServeContent(writer, c.Request, c.Name, c.ModTime, c.Content)
 	return nil
 }

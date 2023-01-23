@@ -12,8 +12,12 @@ type FileAttachmentRender struct {
 	Request  *http.Request
 }
 
-func (f FileAttachmentRender) Render(writer http.ResponseWriter, data interface{}) error {
+func (f FileAttachmentRender) WriterHeader(writer http.ResponseWriter, code int) {
 	writer.Header().Set("Content-Disposition", "attachment; filename=\""+f.Filename+"\"")
+	writeHeader(writer, code)
+}
+
+func (f FileAttachmentRender) Render(writer http.ResponseWriter, data interface{}) error {
 	http.ServeFile(writer, f.Request, f.FilePath)
 	return nil
 }

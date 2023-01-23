@@ -17,3 +17,7 @@ func (t Template) Render(writer http.ResponseWriter, data interface{}) error {
 	writeContentType(writer, "text/html; charset=utf-8")
 	return t.Execute(writer, data)
 }
+
+func (t Template) WriterHeader(writer http.ResponseWriter, code int) {
+	writeHeader(writer, code)
+}

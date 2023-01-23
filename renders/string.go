@@ -6,8 +6,9 @@ package renders
 
 import (
 	"fmt"
-	"github.com/eatmoreapple/regia/internal"
 	"net/http"
+
+	"github.com/eatmoreapple/regia/internal"
 )
 
 type StringRender struct {
@@ -15,8 +16,12 @@ type StringRender struct {
 	Data   []interface{}
 }
 
+func (s StringRender) WriterHeader(writer http.ResponseWriter, code int) {
+	writeContentType(writer, "text/html; charset=utf-8")
+	writeHeader(writer, code)
+}
+
 func (s StringRender) Render(writer http.ResponseWriter, v interface{}) (err error) {
-	writeContentType(writer, "text/html;charset=utf-8")
 	if len(s.Data) > 0 {
 		_, err = fmt.Fprintf(writer, s.Format, s.Data...)
 	} else {
