@@ -8,4 +8,5 @@ import "net/http"
 
 type Render interface {
 	Render(writer http.ResponseWriter, data interface{}) error
+	WriterHeader(writer http.ResponseWriter, code int)
 }

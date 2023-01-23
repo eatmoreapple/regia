@@ -242,11 +242,23 @@ func (c *Context) SetValue(key string, value interface{}) {
 }
 
 // SetStatus set response status code
+// SetStatus will not affect the response data that has been written
 func (c *Context) SetStatus(code int) {
+	if c.written {
+		return
+	}
 	if code < 0 {
 		code = 0
 	}
 	c.status = code
+}
+
+// Status get response status code
+func (c *Context) Status() int {
+	if c.status == 0 {
+		return http.StatusOK
+	}
+	return c.status
 }
 
 // SetHeader set response header
@@ -265,14 +277,11 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 
 // Render write response data with given Render
 func (c *Context) Render(render renders.Render, data interface{}) error {
-	if c.status != 0 {
-		c.ResponseWriter.WriteHeader(c.status)
-		c.status = 0
-	}
+	render.WriterHeader(c.ResponseWriter, c.status)
+	c.written = c.status > 0
 	if !bodyAllowedForStatus(c.status) {
 		return nil
 	}
-	c.written = true
 	return render.Render(c.ResponseWriter, data)
 }
 

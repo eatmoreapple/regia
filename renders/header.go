@@ -10,3 +10,9 @@ func writeContentType(writer http.ResponseWriter, t string) {
 	writer.Header().Del("Content-Type")
 	writer.Header().Set("Content-Type", t)
 }
+
+func writeHeader(writer http.ResponseWriter, code int) {
+	if code > 0 {
+		writer.WriteHeader(code)
+	}
+}

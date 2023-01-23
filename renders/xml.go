@@ -5,15 +5,20 @@
 package renders
 
 import (
-	"github.com/eatmoreapple/regia/internal"
 	"net/http"
+
+	"github.com/eatmoreapple/regia/internal"
 )
 
 type XmlRender struct {
 	Serializer internal.Serializer
 }
 
+func (x XmlRender) WriterHeader(writer http.ResponseWriter, code int) {
+	writeContentType(writer, "text/xml; charset=utf-8")
+	writeHeader(writer, code)
+}
+
 func (x XmlRender) Render(writer http.ResponseWriter, data interface{}) error {
-	writeContentType(writer, "text/xml;charset=utf-8")
 	return x.Serializer.Encode(writer, data)
 }

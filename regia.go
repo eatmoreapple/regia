@@ -115,6 +115,7 @@ func (e *Engine) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		// in case of not found handler is not set
 		// then reply with 404
 		// try to set engine.NotFoundHandle to do your own business
+		context.status = http.StatusNotFound
 		context.group = handleFuncNodeGroup{&handleFuncNode{HandleFunc: e.NotFoundHandle, BluePrint: e.BluePrint}}
 	}
 
